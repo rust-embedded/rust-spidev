@@ -1,0 +1,14 @@
+[package]
+
+name = "spidev"
+version = "0.1.0"
+authors = ["Paul Osborne <osbpau@gmail.com>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/posborne/rust-spidev"
+homepage = "https://github.com/posborne/rust-spidev"
+documentation = "http://posborne.github.io/rust-spidev"
+description = """
+Provides access to the Linux spidev interface.  This
+interface allows for configuration of the spidev device,
+half-duplex SPI access, and full-duplex SPI access.
+"""
