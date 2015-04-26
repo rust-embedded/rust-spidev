@@ -15,24 +15,6 @@ use std::io;
 use nix::from_ffi;
 use std::os::unix::io::RawFd;
 
-pub fn from_nix_error(err: ::nix::Error) -> io::Error {
-    // taken from mio::io, line 178
-    use std::mem;
-
-    // TODO: Remove insane hacks once `std::io::Error::from_os_error` lands
-    //       rust-lang/rust#24028
-    #[allow(dead_code)]
-    enum Repr {
-        Os(i32),
-        Custom(*const ()),
-    }
-
-    unsafe {
-        mem::transmute(Repr::Os(err.errno() as i32))
-    }
-}
-
-
 // low-level ioctl functions and definitions matching the
 // macros provided in ioctl.h from the kernel
 const IOC_NRBITS: u32 = 8;
@@ -52,7 +34,6 @@ bitflags! {
         const IOC_READ  = 0x02,
     }
 }
-
 
 pub fn build_op(dir: IoctlDirFlags, ioctl_type: u8, nr: u8, size: u16) -> u32 {
     (((dir.bits as u32) << IOC_DIRSHIFT) |
@@ -77,6 +58,9 @@ pub fn build_op_read_write(ioctl_type: u8, nr: u8, size: u16) -> u32 {
     build_op(IOC_WRITE | IOC_READ, ioctl_type, nr, size)
 }
 
+fn from_nix_error(err: ::nix::Error) -> io::Error {
+    io::Error::from_raw_os_error(err.errno() as i32)
+}
 
 /// Ioctl call that is expected to return a result
 /// but which does not take any additional arguments on the input side
