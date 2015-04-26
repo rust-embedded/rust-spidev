@@ -35,27 +35,27 @@ bitflags! {
     }
 }
 
-pub fn build_op(dir: IoctlDirFlags, ioctl_type: u8, nr: u8, size: u16) -> u32 {
+pub fn op(dir: IoctlDirFlags, ioctl_type: u8, nr: u8, size: u16) -> u32 {
     (((dir.bits as u32) << IOC_DIRSHIFT) |
      ((ioctl_type as u32) << IOC_TYPESHIFT) |
      ((nr as u32) << IOC_NRSHIFT) |
      ((size as u32) << IOC_SIZESHIFT))
 }
 
-pub fn build_op_none(ioctl_type: u8, nr: u8) -> u32 {
-    build_op(IOC_NONE, ioctl_type, nr, 0)
+pub fn op_none(ioctl_type: u8, nr: u8) -> u32 {
+    op(IOC_NONE, ioctl_type, nr, 0)
 }
 
-pub fn build_op_read(ioctl_type: u8, nr: u8, size: u16) -> u32 {
-    build_op(IOC_READ, ioctl_type, nr, size)
+pub fn op_read(ioctl_type: u8, nr: u8, size: u16) -> u32 {
+    op(IOC_READ, ioctl_type, nr, size)
 }
 
-pub fn build_op_write(ioctl_type: u8, nr: u8, size: u16) -> u32 {
-    build_op(IOC_WRITE, ioctl_type, nr, size)
+pub fn op_write(ioctl_type: u8, nr: u8, size: u16) -> u32 {
+    op(IOC_WRITE, ioctl_type, nr, size)
 }
 
-pub fn build_op_read_write(ioctl_type: u8, nr: u8, size: u16) -> u32 {
-    build_op(IOC_WRITE | IOC_READ, ioctl_type, nr, size)
+pub fn op_read_write(ioctl_type: u8, nr: u8, size: u16) -> u32 {
+    op(IOC_WRITE | IOC_READ, ioctl_type, nr, size)
 }
 
 fn from_nix_error(err: ::nix::Error) -> io::Error {
@@ -64,7 +64,7 @@ fn from_nix_error(err: ::nix::Error) -> io::Error {
 
 /// Ioctl call that is expected to return a result
 /// but which does not take any additional arguments on the input side
-pub fn ioctl_read<T>(fd: RawFd, op: u32) -> io::Result<T> {
+pub fn read<T>(fd: RawFd, op: u32) -> io::Result<T> {
     unsafe {
         // allocate memory for the result (should get a value from kernel)
         let mut dst: T = mem::zeroed();

@@ -15,8 +15,8 @@ extern crate nix;
 #[macro_use]
 extern crate bitflags;
 
-mod ioctl;
-mod spidevioctl;
+pub mod ioctl;
+pub mod spidevioctl;
 
 use std::io;
 use std::io::prelude::*;
