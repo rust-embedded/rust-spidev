@@ -9,12 +9,19 @@
 #![crate_type = "lib"]
 #![crate_name = "spidev"]
 
+extern crate libc;
 extern crate nix;
-use nix::sys::ioctl::ioctl;
 
-use std::io::prelude::*;
+#[macro_use]
+extern crate bitflags;
+
+mod ioctl;
+mod spidevioctl;
+
 use std::io;
-use std::os::unix::prelude::*;
+use std::io::prelude::*;
+use std::fs::{File,OpenOptions};
+use std::path::Path;
 
 ///! API for acessing Linux spidev devices
 ///!
@@ -52,11 +59,11 @@ impl SpidevOptions {
     }
 
     pub fn lsb_first(&mut self, lsb_first: bool) {
-        self.lsb_first = lsb_first;
+        self.lsb_first = Some(lsb_first);
     }
 
     pub fn mode(&mut self, mode: u32) {
-        self.spi_mode = mode;
+        self.spi_mode = Some(mode);
     }
 }
 
@@ -67,9 +74,11 @@ impl Spidev {
                            .write(true)
                            .create(false)
                            .open(path));
-        Spidev {
-            devfile: devfile,
-        }
+        let spidev = Spidev { devfile: devfile };
+        Ok(spidev)
+    }
+
+    pub fn read_mode(&self) {
     }
 
     pub fn configure(&mut self, options: &SpidevOptions) {
@@ -77,9 +86,12 @@ impl Spidev {
         // that are None are left as-is, in order to reduce
         // overhead
         if options.bits_per_word.is_some() {
-            ioctl();
+            
         }
     }
+
+    
+
 }
 
 impl io::Read for Spidev {
@@ -89,11 +101,11 @@ impl io::Read for Spidev {
 }
 
 impl io::Write for Spidev {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.devfile.write(buf)
     }
 
-    fn flush(&mut self) -> Result<()> {
-        self.devfile.flush(buf)
+    fn flush(&mut self) -> io::Result<()> {
+        self.devfile.flush()
     }
 }

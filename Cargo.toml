@@ -12,3 +12,10 @@ Provides access to the Linux spidev interface.  This
 interface allows for configuration of the spidev device,
 half-duplex SPI access, and full-duplex SPI access.
 """
+
+[dependencies]
+libc = "0.1.4"
+bitflags = "0.1.1"
+
+[dependencies.nix]
+git = "https://github.com/carllerche/nix-rust.git"
