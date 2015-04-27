@@ -15,7 +15,7 @@ struct Winsize {
 
 fn main() {
     // 0 is stdout
-    match ioctl::read::<Winsize>(0, TIOCGWINSZ) {
+    match unsafe { ioctl::read::<Winsize>(0, TIOCGWINSZ) } {
         Ok(winsize) => println!("{:?}", winsize),
         Err(err) => println!("{}", err),
     }
