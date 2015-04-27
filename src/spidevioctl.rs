@@ -47,7 +47,7 @@ pub const SPI_IOC_NR_MODE32: u8 = 5;
 fn spidev_ioc_read<T>(fd: RawFd, nr: u8) -> io::Result<T> {
     let size: u16 = mem::size_of::<T>() as u16; // TODO: what if size is too large?
     let op = ioctl::op_read(SPI_IOC_MAGIC, nr, size);
-    ioctl::read(fd, op)
+    unsafe { ioctl::read(fd, op) }
 }
 
 pub fn spi_ioc_rd_mode(fd: RawFd) -> io::Result<u8> {
