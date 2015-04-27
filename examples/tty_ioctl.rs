@@ -3,7 +3,7 @@ extern crate spidev;
 use spidev::ioctl;
 
 // get window size
-pub const TIOCGWINSZ: u32 = 0x5413;
+pub const TIOCGWINSZ: u64 = 0x5413;
 
 #[derive(Clone, Copy, Debug)]
 struct Winsize {
