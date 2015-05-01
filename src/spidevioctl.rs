@@ -47,6 +47,42 @@ const SPI_IOC_NR_MODE32: u8 = 5;
 
 /// Structure that is used when performing communication
 /// with the kernel.
+///
+/// From the kernel documentation:
+///
+/// ```
+/// struct spi_ioc_transfer - describes a single SPI transfer
+/// @tx_buf: Holds pointer to userspace buffer with transmit data, or null.
+///   If no data is provided, zeroes are shifted out.
+/// @rx_buf: Holds pointer to userspace buffer for receive data, or null.
+/// @len: Length of tx and rx buffers, in bytes.
+/// @speed_hz: Temporary override of the device's bitrate.
+/// @bits_per_word: Temporary override of the device's wordsize.
+/// @delay_usecs: If nonzero, how long to delay after the last bit transfer
+///      before optionally deselecting the device before the next transfer.
+/// @cs_change: True to deselect device before starting the next transfer.
+///
+/// This structure is mapped directly to the kernel spi_transfer structure;
+/// the fields have the same meanings, except of course that the pointers
+/// are in a different address space (and may be of different sizes in some
+/// cases, such as 32-bit i386 userspace over a 64-bit x86_64 kernel).
+/// Zero-initialize the structure, including currently unused fields, to
+/// accomodate potential future updates.
+///
+/// SPI_IOC_MESSAGE gives userspace the equivalent of kernel spi_sync().
+/// Pass it an array of related transfers, they'll execute together.
+/// Each transfer may be half duplex (either direction) or full duplex.
+///
+///      struct spi_ioc_transfer mesg[4];
+///      ...
+///      status = ioctl(fd, SPI_IOC_MESSAGE(4), mesg);
+///
+/// So for example one transfer might send a nine bit command (right aligned
+/// in a 16-bit word), the next could read a block of 8-bit data before
+/// terminating that command by temporarily deselecting the chip; the next
+/// could send a different nine bit command (re-selecting the chip), and the
+/// last transfer might write some register values.
+/// ```
 struct spi_ioc_transfer {
     pub tx_buf: u64,
     pub rx_buf: u64,
@@ -98,6 +134,24 @@ impl SpidevTransfer {
         }
     }
 
+    fn as_spi_ioc_transfer(&self) -> spi_ioc_transfer {
+        spi_ioc_transfer {
+            tx_buf: match self.tx_buf {
+                Some(ref bufbox) => bufbox.as_ptr() as u64,
+                None => 0,
+            },
+            rx_buf: match self.rx_buf {
+                Some(ref bufbox) => bufbox.as_ptr() as u64,
+                None => 0,
+            },
+            len: self.len,
+            speed_hz: self.speed_hz,
+            delay_usecs: self.delay_usecs,
+            bits_per_word: self.bits_per_word,
+            cs_change: self.cs_change,
+            pad: self.pad,
+        }
+    }
 }
 
 fn spidev_ioc_read<T>(fd: RawFd, nr: u8) -> io::Result<T> {
@@ -153,4 +207,19 @@ pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
     spidev_ioc_write(fd, SPI_IOC_NR_MAX_SPEED_HZ, &max_speed_hz)
 }
 
-pub fn xfer(fd: RawFd, tx_buf: &[u8]) {}
+pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
+    let transfers = vec!(transfer);
+    transfer_multiple(fd, transfers)
+}
+
+pub fn transfer_multiple(fd: RawFd, transfers: Vec<&mut SpidevTransfer>) -> io::Result<()> {
+    let mut raw_transfers: Vec<spi_ioc_transfer> = transfers.iter().map(|ref xfer| {
+        xfer.as_spi_ioc_transfer()
+    }).collect();
+    let size: u16 = mem::size_of::<spi_ioc_transfer>() as u16;
+    let op = ioctl::op_read_write(
+        SPI_IOC_MAGIC,
+        SPI_IOC_NR_TRANSFER,
+        size * raw_transfers.len() as u16);
+    unsafe { ioctl::read_write(fd, op, &mut raw_transfers) }
+}
