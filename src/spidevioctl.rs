@@ -11,30 +11,8 @@
 use ioctl;
 use std::mem;
 use std::io;
-use std::os::unix::io::RawFd;
-
-// Constants extracted from linux/spi/spidev.h
-bitflags! {
-    flags SpiModeFlags: u8 {
-        const SPI_CPHA = 0x01,
-        const SPI_CPOL = 0x02,
-        const SPI_MODE_0 = 0x00,
-        const SPI_MODE_1 = SPI_CPHA.bits,
-        const SPI_MODE_2 = SPI_CPOL.bits,
-        const SPI_MODE_3 = (SPI_CPOL.bits | SPI_CPHA.bits),
-    }
-}
-
-bitflags! {
-    flags SpidevOptionFlags: u8 {
-        const SPI_CS_HIGH = 0x04,
-        const SPI_LSB_FIRST = 0x08,
-        const SPI_3WIRE = 0x10,
-        const SPI_LOOP = 0x20,
-        const SPI_NO_CS = 0x40,
-        const SPI_READY = 0x80,
-    }
-}
+use std::os::unix::prelude::*;
+use super::SpiModeFlags;
 
 const SPI_IOC_MAGIC: u8 = 'k' as u8;
 
@@ -101,8 +79,8 @@ struct spi_ioc_transfer {
 /// with external users
 #[derive(Default)]
 pub struct SpidevTransfer {
-    tx_buf: Option<Box<[u8]>>,
-    rx_buf: Option<Box<[u8]>>,
+    pub tx_buf: Option<Box<[u8]>>,
+    pub rx_buf: Option<Box<[u8]>>,
     len: u32,
     speed_hz: u32,
     delay_usecs: u16,
