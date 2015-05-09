@@ -61,10 +61,10 @@ const SPI_IOC_NR_MODE32: u8 = 5;
 /// could send a different nine bit command (re-selecting the chip), and the
 /// last transfer might write some register values.
 /// ```
+#[derive(Debug)]
 struct spi_ioc_transfer {
     pub tx_buf: u64,
     pub rx_buf: u64,
-    
     pub len: u32,
 
     // optional overrides
@@ -101,8 +101,9 @@ impl SpidevTransfer {
     }
 
     pub fn write(tx_buf: &[u8]) -> SpidevTransfer {
-        let rx_buf_vec: Vec<u8> = Vec::with_capacity(tx_buf.len());
-        let mut tx_buf_vec: Vec<u8> = Vec::with_capacity(tx_buf.len());
+        let len = tx_buf.len();
+        let rx_buf_vec: Vec<u8> = vec![0; len];
+        let mut tx_buf_vec: Vec<u8> = Vec::with_capacity(len);
         tx_buf_vec.clone_from_slice(tx_buf);
         SpidevTransfer {
             tx_buf: Some(tx_buf_vec.into_boxed_slice()),
@@ -135,13 +136,14 @@ impl SpidevTransfer {
 fn spidev_ioc_read<T>(fd: RawFd, nr: u8) -> io::Result<T> {
     let size: u16 = mem::size_of::<T>() as u16;
     let op = ioctl::op_read(SPI_IOC_MAGIC, nr, size);
-    unsafe { ioctl::read(fd, op) }
+    ioctl::read(fd, op)
 }
 
 fn spidev_ioc_write<T>(fd: RawFd, nr: u8, data: &T) -> io::Result<()> {
     let size: u16 = mem::size_of::<T>() as u16;
     let op = ioctl::op_write(SPI_IOC_MAGIC, nr, size);
-    unsafe { ioctl::write(fd, op, data) }
+    try!(ioctl::write(fd, op, data));
+    Ok(())
 }
 
 pub fn get_mode(fd: RawFd) -> io::Result<u8> {
@@ -186,18 +188,18 @@ pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
 }
 
 pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
-    let transfers = vec!(transfer);
-    transfer_multiple(fd, transfers)
+    let mut raw_transfer = transfer.as_spi_ioc_transfer();
+    let op = ioctl::op_write(
+            SPI_IOC_MAGIC,
+            SPI_IOC_NR_TRANSFER,
+            1 * mem::size_of::<spi_ioc_transfer>() as u16);
+
+    // The kernel will directly modify the rx_buf of the SpidevTransfer
+    // rx_buf if present, so there is no need to do any additional work
+    try!(ioctl::read_write(fd, op, &mut raw_transfer));
+    Ok(())
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: Vec<&mut SpidevTransfer>) -> io::Result<()> {
-    let mut raw_transfers: Vec<spi_ioc_transfer> = transfers.iter().map(|ref xfer| {
-        xfer.as_spi_ioc_transfer()
-    }).collect();
-    let size: u16 = mem::size_of::<spi_ioc_transfer>() as u16;
-    let op = ioctl::op_read_write(
-        SPI_IOC_MAGIC,
-        SPI_IOC_NR_TRANSFER,
-        size * raw_transfers.len() as u16);
-    unsafe { ioctl::read_write(fd, op, &mut raw_transfers) }
+    Ok(())  // TODO: implement this in the future
 }

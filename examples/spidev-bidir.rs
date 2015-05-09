@@ -10,7 +10,9 @@ fn main() {
         .lsb_first(false)
         .mode(SPI_MODE_0);
     spidev.configure(&options).unwrap();
-    let mut transfer = SpidevTransfer::write(&[0xaa, 0xbb, 0xcc]);
+    let mut transfer = SpidevTransfer::write(&[0xaa, 0xbb, 0xcc, 0xdd, 0xee]);
     spidev.transfer(&mut transfer).unwrap();
-    println!("Rx Buffer: {:?}", transfer.rx_buf);
+    for b in transfer.rx_buf.unwrap().iter() {
+        println!("{:?}", b);
+    }
 }

@@ -79,7 +79,7 @@ use libc;
 use libc::{c_int,c_ulong};
 use std::mem;
 use std::io;
-use nix::from_ffi;
+use nix::{from_ffi, errno, Error};
 use std::os::unix::io::RawFd;
 
 // low-level ioctl functions and definitions matching the
@@ -162,53 +162,46 @@ fn from_nix_error(err: ::nix::Error) -> io::Error {
     io::Error::from_raw_os_error(err.errno() as i32)
 }
 
+fn convert_ioctl_res(res: c_int) -> io::Result<c_int> {
+    if res < 0 {
+        return Err(from_nix_error(Error::Sys(errno::Errno::last())))
+    }
+    Ok(res) // res may length or similar useful to caller
+}
+
 /// Ioctl call that is expected to return a result
 /// but which does not take any additional arguments on the input side
-pub unsafe fn read<T>(fd: RawFd, op: c_ulong) -> io::Result<T> {
+pub fn read<T>(fd: RawFd, op: c_ulong) -> io::Result<T> {
     // allocate memory for the result (should get a value from kernel)
-    let mut dst: T = mem::zeroed();
+    let mut dst: T = unsafe { mem::zeroed() };
     let dst_ptr: *mut T = &mut dst;
-    let ioctl_res: c_int = libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, dst_ptr);
-    match from_ffi(ioctl_res) {
-        Err(err) => Err(from_nix_error(err)),
-        Ok(_) => Ok(dst),
-    }
+    try!(convert_ioctl_res(unsafe {
+        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, dst_ptr)
+    }));
+    Ok(dst)
 }
 
 /// Ioctl call that sends a value to the kernel but
 /// does not return anything (pure side effect).
-pub unsafe fn write<T>(fd: RawFd, op: c_ulong, data: &T) -> io::Result<()> {
-    let data_ptr: *const T = data;
-    let ioctl_res: c_int = libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data_ptr);
-    match from_ffi(ioctl_res) {
-        Err(err) => Err(from_nix_error(err)),
-        Ok(_) => Ok(()),
-    }
+pub fn write<T>(fd: RawFd, op: c_ulong, data: &T) -> io::Result<c_int> {
+    convert_ioctl_res(unsafe {
+        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data as *const T)
+    })
 }
 
-/// Ioctl call that sends a value to the kernel and expects that the
-/// kernel will modify the buffer that is provided, in addition to using it
-///
-/// This function is identical to `write` except that it requires a
-/// the data reference to but mutable.
-pub unsafe fn read_write<T>(fd: RawFd, op: c_ulong, data: &mut T) -> io::Result<()> {
-    let data_ptr: *mut T = data;
-    let ioctl_res: c_int = libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data_ptr);
-    match from_ffi(ioctl_res) {
-        Err(err) => Err(from_nix_error(err)),
-        Ok(_) => Ok(()),
-    }
+/// Ioctl call that sends a value to the kernel but
+/// does not return anything (pure side effect).
+pub fn read_write<T>(fd: RawFd, op: c_ulong, data: &mut T) -> io::Result<c_int> {
+    convert_ioctl_res(unsafe {
+        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data as *mut T)
+    })
 }
 
 /// Ioctl call for which no data pointer is provided to the kernel.
 /// That is, the kernel has sufficient information about what to
 /// do based on the op alone.
-pub fn execute(fd: RawFd, op: c_ulong) -> io::Result<()> {
-    unsafe {
-        let ioctl_res: c_int = libc::funcs::bsd44::ioctl(fd as c_int, op as c_int);
-        match from_ffi(ioctl_res) {
-            Err(err) => Err(from_nix_error(err)),
-            Ok(_) => Ok(()),
-        }
-    }
+pub fn execute(fd: RawFd, op: c_ulong) -> io::Result<c_int> {
+    convert_ioctl_res(unsafe {
+        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int)
+    })
 }
