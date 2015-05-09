@@ -8,7 +8,7 @@
 
 #![allow(dead_code)]
 
-use ioctl;
+use nix::sys::ioctl;
 use std::mem;
 use std::io;
 use std::os::unix::prelude::*;
@@ -22,6 +22,18 @@ const SPI_IOC_NR_LSB_FIRST: u8 = 2;
 const SPI_IOC_NR_BITS_PER_WORD: u8 = 3;
 const SPI_IOC_NR_MAX_SPEED_HZ: u8 = 4;
 const SPI_IOC_NR_MODE32: u8 = 5;
+
+fn from_nix_error(err: ::nix::Error) -> io::Error {
+    io::Error::from_raw_os_error(err.errno() as i32)
+}
+
+fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
+    match res {
+        Ok(r) => Ok(r),
+        Err(err) => Err(from_nix_error(err)),
+    }
+}
+
 
 /// Structure that is used when performing communication
 /// with the kernel.
@@ -133,15 +145,15 @@ impl SpidevTransfer {
 }
 
 fn spidev_ioc_read<T>(fd: RawFd, nr: u8) -> io::Result<T> {
-    let size: u16 = mem::size_of::<T>() as u16;
+    let size = mem::size_of::<T>();
     let op = ioctl::op_read(SPI_IOC_MAGIC, nr, size);
-    ioctl::read(fd, op)
+    from_nix_result(unsafe { ioctl::read(fd, op) })
 }
 
 fn spidev_ioc_write<T>(fd: RawFd, nr: u8, data: &T) -> io::Result<()> {
-    let size: u16 = mem::size_of::<T>() as u16;
+    let size = mem::size_of::<T>();
     let op = ioctl::op_write(SPI_IOC_MAGIC, nr, size);
-    try!(ioctl::write(fd, op, data));
+    try!(from_nix_result(unsafe { ioctl::write(fd, op, data) }));
     Ok(())
 }
 
@@ -191,11 +203,13 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     let op = ioctl::op_write(
             SPI_IOC_MAGIC,
             SPI_IOC_NR_TRANSFER,
-            1 * mem::size_of::<spi_ioc_transfer>() as u16);
+            1 * mem::size_of::<spi_ioc_transfer>());
 
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
-    try!(ioctl::read_write(fd, op, &mut raw_transfer));
+    try!(from_nix_result(unsafe {
+        ioctl::read_into(fd, op, &mut raw_transfer)
+    }));
     Ok(())
 }
 
@@ -211,10 +225,12 @@ pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Resu
     let op = ioctl::op_write(
         SPI_IOC_MAGIC,
         SPI_IOC_NR_TRANSFER,
-        tot_size as u16);
+        tot_size);
 
     // The kernel will directly modify the rx_buf of each transfer
     // so no additional work is required here
-    try!(ioctl::read_write_ptr(fd, op, raw_transfers.as_mut_ptr()));
+    try!(from_nix_result(unsafe {
+        ioctl::read_into_ptr(fd, op, raw_transfers.as_mut_ptr())
+    }));
     Ok(())
 }

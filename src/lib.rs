@@ -18,7 +18,6 @@ extern crate nix;
 #[macro_use]
 extern crate bitflags;
 
-pub mod ioctl;
 pub mod spidevioctl;
 
 use std::io;
