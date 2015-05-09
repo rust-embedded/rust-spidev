@@ -79,7 +79,7 @@ use libc;
 use libc::{c_int,c_ulong};
 use std::mem;
 use std::io;
-use nix::{from_ffi, errno, Error};
+use nix::{errno, Error};
 use std::os::unix::io::RawFd;
 
 // low-level ioctl functions and definitions matching the
@@ -192,8 +192,12 @@ pub fn write<T>(fd: RawFd, op: c_ulong, data: &T) -> io::Result<c_int> {
 /// Ioctl call that sends a value to the kernel but
 /// does not return anything (pure side effect).
 pub fn read_write<T>(fd: RawFd, op: c_ulong, data: &mut T) -> io::Result<c_int> {
+    read_write_ptr(fd, op, data as *mut T)
+}
+
+pub fn read_write_ptr<T>(fd: RawFd, op: c_ulong, data_ptr: *mut T) -> io::Result<c_int> {
     convert_ioctl_res(unsafe {
-        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data as *mut T)
+        libc::funcs::bsd44::ioctl(fd as c_int, op as c_int, data_ptr)
     })
 }
 

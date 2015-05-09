@@ -137,7 +137,7 @@ impl Spidev {
         spidevioctl::transfer(self.devfile.as_raw_fd(), transfer)
     }
 
-    pub fn transfer_multiple(&self, transfers: Vec<&mut spidevioctl::SpidevTransfer>) -> io::Result<()> {
+    pub fn transfer_multiple(&self, transfers: &Vec<spidevioctl::SpidevTransfer>) -> io::Result<()> {
         spidevioctl::transfer_multiple(self.devfile.as_raw_fd(), transfers)
     }
 }

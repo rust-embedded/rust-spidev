@@ -90,11 +90,10 @@ pub struct SpidevTransfer {
 }
 
 impl SpidevTransfer {
-    pub fn read(length: u32) -> SpidevTransfer {
-        let rx_buf_vec: Vec<u8> = Vec::with_capacity(length as usize);
+    pub fn read(length: usize) -> SpidevTransfer {
         SpidevTransfer {
             tx_buf: None,
-            rx_buf: Some(rx_buf_vec.into_boxed_slice()),
+            rx_buf: Some(vec![0u8; length].into_boxed_slice()),
             len: length as u32,
             ..Default::default()
         }
@@ -200,6 +199,22 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     Ok(())
 }
 
-pub fn transfer_multiple(fd: RawFd, transfers: Vec<&mut SpidevTransfer>) -> io::Result<()> {
-    Ok(())  // TODO: implement this in the future
+pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
+    // create a boxed slice containg several spi_ioc_transfers
+    let mut raw_transfers_vec: Vec<spi_ioc_transfer> = Vec::with_capacity(transfers.len());
+    for transfer in transfers.iter() {
+        raw_transfers_vec.push(transfer.as_spi_ioc_transfer());
+    }
+    let mut raw_transfers = raw_transfers_vec.into_boxed_slice();
+
+    let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
+    let op = ioctl::op_write(
+        SPI_IOC_MAGIC,
+        SPI_IOC_NR_TRANSFER,
+        tot_size as u16);
+
+    // The kernel will directly modify the rx_buf of each transfer
+    // so no additional work is required here
+    try!(ioctl::read_write_ptr(fd, op, raw_transfers.as_mut_ptr()));
+    Ok(())
 }
