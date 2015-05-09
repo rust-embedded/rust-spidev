@@ -114,7 +114,7 @@ impl SpidevTransfer {
     pub fn write(tx_buf: &[u8]) -> SpidevTransfer {
         let len = tx_buf.len();
         let rx_buf_vec: Vec<u8> = vec![0; len];
-        let mut tx_buf_vec: Vec<u8> = Vec::with_capacity(len);
+        let mut tx_buf_vec: Vec<u8> = vec![0; len];
         tx_buf_vec.clone_from_slice(tx_buf);
         SpidevTransfer {
             tx_buf: Some(tx_buf_vec.into_boxed_slice()),
