@@ -15,33 +15,44 @@ practice.
 
 ```rust
 extern crate spidev;
-
-use spidev::Spidev;
-
-// spidev is opened with default settings
-let spi = try!(Spidev::new("/dev/spidev0.1"));
-
-// change a few settings
-spi.set_bits_per_word(8u);
-spi.set_cshigh(true);
-spi.set_loop();
-spi.set_lsbfirst();
-spi.set_max_speed_hz();
-spi.set_mode();
-spi.set_threewire();
-
-// half-duplex read/write operations are available
-// using the ::std::io::Read and ::std::io::Write
-// traits which are implemented for the Spidev struct
-let outbuf = [1u8, 2u8, 3u8];
-let mut inbuf : [u8; 10] = [0; 10];
-try!(spi.write_all(&outbuf));
-let _ = try!(spi.read(&mut inbuf)); // will always read 10 bytes
-
-// full-duplex transfers are supported via the xfer
-// method.  Here, we perform a read and write of the
-// same buffers as used previously
-let _ = try!(spi.xfer(outbuf, inbuf));
+use std::io;
+use std::io::prelude::*;
+use spidev::{Spidev, SpidevOptions, SpidevTransfer, SPI_MODE_0};
+//!
+fn create_spi() -> io::Result<Spidev> {
+    let mut spi = try!(Spidev::open("/dev/spidev0.0"));
+    let mut options = SpidevOptions::new()
+         .bits_per_word(8)
+         .max_speed_hz(20_000)
+         .mode(SPI_MODE_0);
+    try!(spi.configure(&options));
+    Ok(spi)
+}
+//!
+/// perform half duplex operations using Read and Write traits
+fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
+    let mut rx_buf = [0_u8; 10];
+    try!(spi.write(&[0x01, 0x02, 0x03]));
+    try!(spi.read(&mut rx_buf));
+    println!("{:?}", rx_buf);
+    Ok(())
+}
+//!
+/// Perform full duplex operations using Ioctl
+fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
+    // "write" transfers are also reads at the same time with
+    // the read having the same length as the write
+    let mut transfer = SpidevTransfer::write(&[0x01, 0x02, 0x03]);
+    try!(spi.transfer(&mut transfer));
+    println!("{:?}", transfer.rx_buf);
+    Ok(())
+}
+//!
+fn main() {
+    let mut spi = create_spi().unwrap();
+    println!("{:?}", half_duplex(&mut spi).unwrap());
+    println!("{:?}", full_duplex(&mut spi).unwrap());
+}
 ```
 
 Features
@@ -49,15 +60,11 @@ Features
 
 The following features are implemented and planned for the library:
 
-- [ ] Implement the Read trait
-- [ ] Implement the Write trait
-- [ ] Support for full-duplex transfers
-- [ ] Support for configuring spidev device
+- [x] Implement the Read trait
+- [x] Implement the Write trait
+- [x] Support for full-duplex transfers
+- [x] Support for configuring spidev device
 - [ ] Support for querying spidev configuration state
-
-License
--------
-
 
 Cross Compiling
 ---------------

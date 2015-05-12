@@ -40,7 +40,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 ///
 /// From the kernel documentation:
 ///
-/// ```
+/// ```text
 /// struct spi_ioc_transfer - describes a single SPI transfer
 /// @tx_buf: Holds pointer to userspace buffer with transmit data, or null.
 ///   If no data is provided, zeroes are shifted out.
@@ -73,6 +73,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 /// could send a different nine bit command (re-selecting the chip), and the
 /// last transfer might write some register values.
 /// ```
+#[allow(non_camel_case_types)]
 #[derive(Debug)]
 struct spi_ioc_transfer {
     pub tx_buf: u64,
