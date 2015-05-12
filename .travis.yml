@@ -1,0 +1,18 @@
+language: rust
+
+env:
+  global:
+    - secure: "KqhgPk6Hy0m37r27fy5ai5DxWN+XP72Zz/oWqWqpIQowIIPI2X0FvmEUEflWim++8KB6CD3l5e61ZpO+Cyp+K1JQBplyVPYvJeLV+2CGeRCcaIgjBx2hkJtI3J9pnyr4hbY5DUL0AodgxuOke7t7i9fZz9X6K9fWjco7sn2mfz4="
+
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+  - cargo doc
+
+# Publish documentation on successfull master build
+# using the ghp-import python package
+after_success: ! '[ $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ]
+  && echo "<meta http-equiv=refresh content=0;url=spidev/index.html>" > target/doc/index.html
+  && sudo pip install ghp-import
+  && ghp-import -n target/doc
+  && git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages'
