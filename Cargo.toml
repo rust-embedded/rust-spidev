@@ -18,5 +18,4 @@ libc = "0.1.4"
 bitflags = "0.1.1"
 
 [dependencies.nix]
-git = "https://github.com/posborne/nix-rust.git"
-branch = "generic-ioctl"
+git = "https://github.com/carllerche/nix-rust"
