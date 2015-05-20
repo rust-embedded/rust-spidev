@@ -63,9 +63,6 @@
 //! }
 //! ```
 
-// clone_from_slice
-#![feature(collections)]
-
 extern crate libc;
 extern crate nix;
 
