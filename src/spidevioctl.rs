@@ -167,8 +167,19 @@ pub fn get_mode(fd: RawFd) -> io::Result<u8> {
 }
 
 pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
-    // #define SPI_IOC_WR_MODE _IOW(SPI_IOC_MAGIC, 1, __u8)
-    spidev_ioc_write(fd, SPI_IOC_NR_MODE, &mode.bits)
+    // #define SPI_IOC_WR_MODE   _IOW(SPI_IOC_MAGIC, 1, __u8)
+    // #define SPI_IOC_WR_MODE32 _IOW(SPI_IOC_MAGIC, 5, __u32)
+
+    // we will always use the 8-bit mode write unless bits not in
+    // the 8-bit mask are used.  This is because WR_MODE32 was not
+    // added until later kernels.  This provides a reasonable story
+    // for forwards and backwards compatability
+    if (mode.bits & 0xFFFFFF00) != 0 {
+        spidev_ioc_write::<u32>(fd, SPI_IOC_NR_MODE32, &mode.bits)
+    } else {
+        let bits: u8 = mode.bits as u8;
+        spidev_ioc_write::<u8>(fd, SPI_IOC_NR_MODE, &bits)
+    }
 }
 
 pub fn get_lsb_first(fd: RawFd) -> io::Result<bool> {
