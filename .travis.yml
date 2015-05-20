@@ -2,11 +2,9 @@ language: rust
 rust:
   - 1.0.0
   - nightly
-
 env:
   global:
-    - secure: "KqhgPk6Hy0m37r27fy5ai5DxWN+XP72Zz/oWqWqpIQowIIPI2X0FvmEUEflWim++8KB6CD3l5e61ZpO+Cyp+K1JQBplyVPYvJeLV+2CGeRCcaIgjBx2hkJtI3J9pnyr4hbY5DUL0AodgxuOke7t7i9fZz9X6K9fWjco7sn2mfz4="
-
+    - secure: cJteZ1LbDExDnUMJqWrPQwHNWFDJOP5OH1zYX8j1nkJ91paDqBogCuHslooSDcrewnCmTLawv8na1KjGMZ2y3mwn26GhF5TfXsY+vHATIyex+z2fGOgCOlx47MSRdK7A30Pl66Ye/oboDX7iTqc+uzNucoutOB/ji4euD6wOu1g=
 script:
   - cargo build --verbose
   - cargo test --verbose
