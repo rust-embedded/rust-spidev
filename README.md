@@ -18,7 +18,7 @@ extern crate spidev;
 use std::io;
 use std::io::prelude::*;
 use spidev::{Spidev, SpidevOptions, SpidevTransfer, SPI_MODE_0};
-//!
+
 fn create_spi() -> io::Result<Spidev> {
     let mut spi = try!(Spidev::open("/dev/spidev0.0"));
     let mut options = SpidevOptions::new()
@@ -28,7 +28,7 @@ fn create_spi() -> io::Result<Spidev> {
     try!(spi.configure(&options));
     Ok(spi)
 }
-//!
+
 /// perform half duplex operations using Read and Write traits
 fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
     let mut rx_buf = [0_u8; 10];
@@ -37,7 +37,7 @@ fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
     println!("{:?}", rx_buf);
     Ok(())
 }
-//!
+
 /// Perform full duplex operations using Ioctl
 fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
     // "write" transfers are also reads at the same time with
@@ -47,7 +47,7 @@ fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
     println!("{:?}", transfer.rx_buf);
     Ok(())
 }
-//!
+
 fn main() {
     let mut spi = create_spi().unwrap();
     println!("{:?}", half_duplex(&mut spi).unwrap());
