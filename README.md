@@ -1,6 +1,12 @@
 Rust Spidev
 ===========
 
+[![Build Status](https://img.shields.io/travis/posborne/rust-spidev.svg)](https://travis-ci.org/posborne/rust-spidev)
+[![Version](https://img.shields.io/crates/v/spidev.svg)](https://crates.io/crates/spidev)
+[![License](https://img.shields.io/crates/l/spidev.svg)](https://github.com/posborne/rust-spidev/blob/master/README.md#license)
+
+[Documentation](https://posborne.github.io/rust-spidev)
+
 The Rust `spidev` seeks to provide full access to the Linux spidev
 device in Rust without the need to wrap any C code or directly make
 low-level system calls.  The documentation for the spidev interace can
