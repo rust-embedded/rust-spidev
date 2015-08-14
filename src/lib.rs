@@ -65,10 +65,8 @@
 //! ```
 
 extern crate libc;
-extern crate nix;
-
-#[macro_use]
-extern crate bitflags;
+#[macro_use] extern crate nix;
+#[macro_use] extern crate bitflags;
 
 pub mod spidevioctl;
 pub use spidevioctl::SpidevTransfer;
