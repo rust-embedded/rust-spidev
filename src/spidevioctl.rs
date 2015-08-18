@@ -221,14 +221,16 @@ pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
 // until runtime.  We fallback to using the underlying ioctl for that
 // use case.
 ioctl!(write ioctl_spidev_transfer with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
-ioctl!(write buf ioctl_spidev_transfer_buf with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; Box<[spi_ioc_transfer]>);
+ioctl!(write buf ioctl_spidev_transfer_buf with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
 
 pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     let mut raw_transfer = transfer.as_spi_ioc_transfer();
 
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
-    try!(from_nix_result(unsafe { ioctl_spidev_transfer(fd, &mut raw_transfer) }));
+    try!(from_nix_result(unsafe {
+        ioctl_spidev_transfer(fd, &mut raw_transfer)
+    }));
     Ok(())
 }
 
@@ -239,8 +241,10 @@ pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Resu
         .map(|transfer| transfer.as_spi_ioc_transfer())
         .collect::<Vec<_>>()
         .into_boxed_slice();
-
     let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
-    try!(from_nix_result(unsafe { ioctl_spidev_transfer_buf(fd, &mut raw_transfers, tot_size) }));
+
+    try!(from_nix_result(unsafe {
+        ioctl_spidev_transfer_buf(fd, raw_transfers.as_mut_ptr(), tot_size)
+    }));
     Ok(())
 }
