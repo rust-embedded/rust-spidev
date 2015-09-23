@@ -218,7 +218,7 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     let op = ioctl::op_write(
             SPI_IOC_MAGIC,
             SPI_IOC_NR_TRANSFER,
-            1 * mem::size_of::<spi_ioc_transfer>());
+            mem::size_of::<spi_ioc_transfer>());
 
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
@@ -229,12 +229,12 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
-    // create a boxed slice containg several spi_ioc_transfers
-    let mut raw_transfers_vec: Vec<spi_ioc_transfer> = Vec::with_capacity(transfers.len());
-    for transfer in transfers.iter() {
-        raw_transfers_vec.push(transfer.as_spi_ioc_transfer());
-    }
-    let mut raw_transfers = raw_transfers_vec.into_boxed_slice();
+    // create a boxed slice containing several spi_ioc_transfers
+    let mut raw_transfers = transfers
+        .iter()
+        .map(|transfer| transfer.as_spi_ioc_transfer())
+        .collect::<Vec<_>>()
+        .into_boxed_slice();
 
     let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
     let op = ioctl::op_write(

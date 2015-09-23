@@ -214,8 +214,7 @@ impl Spidev {
                            .write(true)
                            .create(false)
                            .open(path));
-        let spidev = Spidev { devfile: devfile };
-        Ok(spidev)
+        Ok(Spidev { devfile: devfile })
     }
 
     /// Write the provided configuration to this device
@@ -224,20 +223,16 @@ impl Spidev {
         // that are None are left as-is, in order to reduce
         // overhead
         let fd = self.devfile.as_raw_fd();
-        if options.bits_per_word.is_some() {
-            let bpw = options.bits_per_word.unwrap();
+        if let Some(bpw) = options.bits_per_word {
             try!(spidevioctl::set_bits_per_word(fd, bpw));
         }
-        if options.max_speed_hz.is_some() {
-            let speed = options.max_speed_hz.unwrap();
+        if let Some(speed) = options.max_speed_hz {
             try!(spidevioctl::set_max_speed_hz(fd, speed));
         }
-        if options.lsb_first.is_some() {
-            let lsb_first = options.lsb_first.unwrap();
+        if let Some(lsb_first) = options.lsb_first {
             try!(spidevioctl::set_lsb_first(fd, lsb_first));
         }
-        if options.spi_mode.is_some() {
-            let spi_mode_flags = options.spi_mode.unwrap();
+        if let Some(spi_mode_flags) = options.spi_mode {
             try!(spidevioctl::set_mode(fd, spi_mode_flags));
         }
         Ok(())
