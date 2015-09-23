@@ -13,7 +13,7 @@
 //!
 //! The `spidev` crate provides access to Linux spidev devices
 //! from rust.  The wrapping of the interface is pretty direct
-//! and should provide few big surprises.
+//! and shouldn't cause any surprises.
 //!
 //! Additional information on the interface may be found in
 //! [the kernel documentation
@@ -125,7 +125,7 @@ pub struct Spidev {
 
 /// Options that control defaults for communication on a device
 ///
-/// Individual settings may be overriden via parameters that
+/// Individual settings may be overridden via parameters that
 /// are specified as part of any individual SpiTransfer when
 /// using `transfer` or `transfer_multiple`.
 ///
@@ -168,7 +168,7 @@ impl SpidevOptions {
         self
     }
 
-    /// the bit justification used to transfer SPI words
+    /// The bit justification used to transfer SPI words
     ///
     /// Zero indicates MSB-first; other values indicate the less common
     /// LSB-first encoding.  In both cases the specified value is
@@ -207,7 +207,7 @@ impl Spidev {
     ///
     /// Typically, the path will be something like `"/dev/spidev0.0"`
     /// where the first number if the bus and the second number
-    /// is the chip select on that bus for the device being targetted.
+    /// is the chip select on that bus for the device being targeted.
     pub fn open<P: AsRef<Path>>(path : P) -> io::Result<Spidev> {
         let devfile = try!(OpenOptions::new()
                            .read(true)
