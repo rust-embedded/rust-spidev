@@ -75,6 +75,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 /// ```
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
+#[repr(C)]
 struct spi_ioc_transfer {
     pub tx_buf: u64,
     pub rx_buf: u64,
