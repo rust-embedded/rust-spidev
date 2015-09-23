@@ -20,7 +20,8 @@ fn main() {
         .bits_per_word(8)
         .max_speed_hz(5000)
         .lsb_first(false)
-        .mode(SPI_MODE_0);
+        .mode(SPI_MODE_0)
+        .build();
     spidev.configure(&options).unwrap();
 
     println!("===== Single transfer =========");
