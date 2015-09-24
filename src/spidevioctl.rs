@@ -57,7 +57,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 /// are in a different address space (and may be of different sizes in some
 /// cases, such as 32-bit i386 userspace over a 64-bit x86_64 kernel).
 /// Zero-initialize the structure, including currently unused fields, to
-/// accomodate potential future updates.
+/// accommodate potential future updates.
 ///
 /// SPI_IOC_MESSAGE gives userspace the equivalent of kernel spi_sync().
 /// Pass it an array of related transfers, they'll execute together.
@@ -75,6 +75,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 /// ```
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
+#[repr(C)]
 struct spi_ioc_transfer {
     pub tx_buf: u64,
     pub rx_buf: u64,
@@ -173,7 +174,7 @@ pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // we will always use the 8-bit mode write unless bits not in
     // the 8-bit mask are used.  This is because WR_MODE32 was not
     // added until later kernels.  This provides a reasonable story
-    // for forwards and backwards compatability
+    // for forwards and backwards compatibility
     if (mode.bits & 0xFFFFFF00) != 0 {
         spidev_ioc_write::<u32>(fd, SPI_IOC_NR_MODE32, &mode.bits)
     } else {
@@ -218,7 +219,7 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     let op = ioctl::op_write(
             SPI_IOC_MAGIC,
             SPI_IOC_NR_TRANSFER,
-            1 * mem::size_of::<spi_ioc_transfer>());
+            mem::size_of::<spi_ioc_transfer>());
 
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
@@ -229,12 +230,12 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
-    // create a boxed slice containg several spi_ioc_transfers
-    let mut raw_transfers_vec: Vec<spi_ioc_transfer> = Vec::with_capacity(transfers.len());
-    for transfer in transfers.iter() {
-        raw_transfers_vec.push(transfer.as_spi_ioc_transfer());
-    }
-    let mut raw_transfers = raw_transfers_vec.into_boxed_slice();
+    // create a boxed slice containing several spi_ioc_transfers
+    let mut raw_transfers = transfers
+        .iter()
+        .map(|transfer| transfer.as_spi_ioc_transfer())
+        .collect::<Vec<_>>()
+        .into_boxed_slice();
 
     let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
     let op = ioctl::op_write(

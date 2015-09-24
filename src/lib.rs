@@ -13,7 +13,7 @@
 //!
 //! The `spidev` crate provides access to Linux spidev devices
 //! from rust.  The wrapping of the interface is pretty direct
-//! and should provide few big surprises.
+//! and shouldn't cause any surprises.
 //!
 //! Additional information on the interface may be found in
 //! [the kernel documentation
@@ -29,10 +29,11 @@
 //!
 //! fn create_spi() -> io::Result<Spidev> {
 //!     let mut spi = try!(Spidev::open("/dev/spidev0.0"));
-//!     let mut options = SpidevOptions::new()
+//!     let options = SpidevOptions::new()
 //!          .bits_per_word(8)
 //!          .max_speed_hz(20_000)
-//!          .mode(SPI_MODE_0);
+//!          .mode(SPI_MODE_0)
+//!          .build();
 //!     try!(spi.configure(&options));
 //!     Ok(spi)
 //! }
@@ -124,7 +125,7 @@ pub struct Spidev {
 
 /// Options that control defaults for communication on a device
 ///
-/// Individual settings may be overriden via parameters that
+/// Individual settings may be overridden via parameters that
 /// are specified as part of any individual SpiTransfer when
 /// using `transfer` or `transfer_multiple`.
 ///
@@ -154,31 +155,28 @@ impl SpidevOptions {
     /// The number of bits in each SPI transfer word
     ///
     /// The value zero signifies eight bits.
-    pub fn bits_per_word(&self, bits_per_word: u8) -> SpidevOptions {
-        let mut newopts = self.clone();
-        newopts.bits_per_word = Some(bits_per_word);
-        newopts
+    pub fn bits_per_word(&mut self, bits_per_word: u8) -> &mut Self {
+        self.bits_per_word = Some(bits_per_word);
+        self
     }
 
     /// The maximum SPI transfer speed, in Hz
     ///
     /// The controller can't necessarily assign that specific clock speed.
-    pub fn max_speed_hz(&self, max_speed_hz: u32) -> SpidevOptions {
-        let mut newopts = self.clone();
-        newopts.max_speed_hz = Some(max_speed_hz);
-        newopts
+    pub fn max_speed_hz(&mut self, max_speed_hz: u32) -> &mut Self {
+        self.max_speed_hz = Some(max_speed_hz);
+        self
     }
 
-    /// the bit justification used to transfer SPI words
+    /// The bit justification used to transfer SPI words
     ///
     /// Zero indicates MSB-first; other values indicate the less common
     /// LSB-first encoding.  In both cases the specified value is
     /// right-justified in each word, so that unused (TX) or undefined (RX)
     /// bits are in the MSBs.
-    pub fn lsb_first(&mut self, lsb_first: bool) -> SpidevOptions {
-        let mut newopts = self.clone();
-        newopts.lsb_first = Some(lsb_first);
-        newopts
+    pub fn lsb_first(&mut self, lsb_first: bool) -> &mut Self {
+        self.lsb_first = Some(lsb_first);
+        self
     }
 
     /// Set the SPI Transfer Mode
@@ -193,10 +191,14 @@ impl SpidevOptions {
     /// kernels.  SPI_IOC_WR_MODE32 is only present in 3.15+ kernels.
     /// SPI_IOC_WR_MODE32 will be used iff bits higher than those in
     /// 8bits are provided (e.g. Dual/Quad Tx/Rx).
-    pub fn mode(&self, mode: SpiModeFlags) -> SpidevOptions {
-        let mut newopts = self.clone();
-        newopts.spi_mode = Some(mode);
-        newopts
+    pub fn mode(&mut self, mode: SpiModeFlags) -> &mut Self {
+        self.spi_mode = Some(mode);
+        self
+    }
+
+    /// Finalize and build the SpidevOptions
+    pub fn build(&self) -> Self {
+        self.clone()
     }
 }
 
@@ -205,15 +207,14 @@ impl Spidev {
     ///
     /// Typically, the path will be something like `"/dev/spidev0.0"`
     /// where the first number if the bus and the second number
-    /// is the chip select on that bus for the device being targetted.
+    /// is the chip select on that bus for the device being targeted.
     pub fn open<P: AsRef<Path>>(path : P) -> io::Result<Spidev> {
         let devfile = try!(OpenOptions::new()
                            .read(true)
                            .write(true)
                            .create(false)
                            .open(path));
-        let spidev = Spidev { devfile: devfile };
-        Ok(spidev)
+        Ok(Spidev { devfile: devfile })
     }
 
     /// Write the provided configuration to this device
@@ -222,20 +223,16 @@ impl Spidev {
         // that are None are left as-is, in order to reduce
         // overhead
         let fd = self.devfile.as_raw_fd();
-        if options.bits_per_word.is_some() {
-            let bpw = options.bits_per_word.unwrap();
+        if let Some(bpw) = options.bits_per_word {
             try!(spidevioctl::set_bits_per_word(fd, bpw));
         }
-        if options.max_speed_hz.is_some() {
-            let speed = options.max_speed_hz.unwrap();
+        if let Some(speed) = options.max_speed_hz {
             try!(spidevioctl::set_max_speed_hz(fd, speed));
         }
-        if options.lsb_first.is_some() {
-            let lsb_first = options.lsb_first.unwrap();
+        if let Some(lsb_first) = options.lsb_first {
             try!(spidevioctl::set_lsb_first(fd, lsb_first));
         }
-        if options.spi_mode.is_some() {
-            let spi_mode_flags = options.spi_mode.unwrap();
+        if let Some(spi_mode_flags) = options.spi_mode {
             try!(spidevioctl::set_mode(fd, spi_mode_flags));
         }
         Ok(())
@@ -269,5 +266,36 @@ impl Write for Spidev {
 
     fn flush(&mut self) -> io::Result<()> {
         self.devfile.flush()
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::{SpidevOptions, SPI_MODE_0};
+
+    #[test]
+    fn test_spidev_options_all() {
+        let options = SpidevOptions::new()
+            .bits_per_word(8)
+            .max_speed_hz(20_000)
+            .lsb_first(false)
+            .mode(SPI_MODE_0)
+            .build();
+        assert_eq!(options.bits_per_word, Some(8));
+        assert_eq!(options.max_speed_hz, Some(20_000));
+        assert_eq!(options.lsb_first, Some(false));
+        assert_eq!(options.spi_mode, Some(SPI_MODE_0));
+    }
+
+    #[test]
+    fn test_spidev_options_some() {
+        let mut options = SpidevOptions::new();
+        options.bits_per_word(10);
+        options.lsb_first(true);
+        assert_eq!(options.bits_per_word, Some(10));
+        assert_eq!(options.max_speed_hz, None);
+        assert_eq!(options.lsb_first, Some(true));
+        assert_eq!(options.spi_mode, None);
     }
 }
