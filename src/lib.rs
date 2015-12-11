@@ -65,8 +65,10 @@
 //! ```
 
 extern crate libc;
-#[macro_use] extern crate nix;
-#[macro_use] extern crate bitflags;
+#[macro_use]
+extern crate nix;
+#[macro_use]
+extern crate bitflags;
 
 pub mod spidevioctl;
 pub use spidevioctl::SpidevTransfer;
@@ -118,7 +120,7 @@ bitflags! {
 
 /// Provide high-level access to Linux Spidev Driver
 pub struct Spidev {
-    devfile : File,
+    devfile: File,
 }
 
 /// Options that control defaults for communication on a device
@@ -139,7 +141,6 @@ pub struct SpidevOptions {
 }
 
 impl SpidevOptions {
-
     /// Create a new, empty set of options
     pub fn new() -> SpidevOptions {
         SpidevOptions {
@@ -206,12 +207,12 @@ impl Spidev {
     /// Typically, the path will be something like `"/dev/spidev0.0"`
     /// where the first number if the bus and the second number
     /// is the chip select on that bus for the device being targeted.
-    pub fn open<P: AsRef<Path>>(path : P) -> io::Result<Spidev> {
+    pub fn open<P: AsRef<Path>>(path: P) -> io::Result<Spidev> {
         let devfile = try!(OpenOptions::new()
-                           .read(true)
-                           .write(true)
-                           .create(false)
-                           .open(path));
+                               .read(true)
+                               .write(true)
+                               .create(false)
+                               .open(path));
         Ok(Spidev { devfile: devfile })
     }
 
@@ -275,11 +276,11 @@ mod test {
     #[test]
     fn test_spidev_options_all() {
         let options = SpidevOptions::new()
-            .bits_per_word(8)
-            .max_speed_hz(20_000)
-            .lsb_first(false)
-            .mode(SPI_MODE_0)
-            .build();
+                          .bits_per_word(8)
+                          .max_speed_hz(20_000)
+                          .lsb_first(false)
+                          .mode(SPI_MODE_0)
+                          .build();
         assert_eq!(options.bits_per_word, Some(8));
         assert_eq!(options.max_speed_hz, Some(20_000));
         assert_eq!(options.lsb_first, Some(false));

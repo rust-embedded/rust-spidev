@@ -80,7 +80,7 @@ pub struct spi_ioc_transfer {
 }
 
 mod ioctl {
-    use super::{spi_ioc_transfer};
+    use super::spi_ioc_transfer;
 
     const SPI_IOC_MAGIC: u8 = 'k' as u8;
     const SPI_IOC_NR_TRANSFER: u8 = 0;
@@ -200,14 +200,18 @@ pub fn get_lsb_first(fd: RawFd) -> io::Result<u8> {
 }
 
 pub fn set_lsb_first(fd: RawFd, lsb_first: bool) -> io::Result<()> {
-    let lsb_first_value: u8 = if lsb_first { 1 } else { 0 };
+    let lsb_first_value: u8 = if lsb_first {
+        1
+    } else {
+        0
+    };
     try!(from_nix_result(unsafe { ioctl::set_lsb_first(fd, &lsb_first_value) }));
     Ok(())
 }
 
 pub fn get_bits_per_word(fd: RawFd) -> io::Result<u8> {
     let mut bits_per_word: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_bits_per_word(fd, &mut bits_per_word)} ));
+    try!(from_nix_result(unsafe { ioctl::get_bits_per_word(fd, &mut bits_per_word) }));
     Ok(bits_per_word)
 }
 
@@ -218,7 +222,7 @@ pub fn set_bits_per_word(fd: RawFd, bits_per_word: u8) -> io::Result<()> {
 
 pub fn get_max_speed_hz(fd: RawFd) -> io::Result<u32> {
     let mut max_speed_hz: u32 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_max_speed_hz(fd, &mut max_speed_hz)} ));
+    try!(from_nix_result(unsafe { ioctl::get_max_speed_hz(fd, &mut max_speed_hz) }));
     Ok(max_speed_hz)
 }
 
@@ -232,19 +236,16 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
 
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
-    try!(from_nix_result(unsafe {
-        ioctl::spidev_transfer(fd, &mut raw_transfer)
-    }));
+    try!(from_nix_result(unsafe { ioctl::spidev_transfer(fd, &mut raw_transfer) }));
     Ok(())
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
     // create a boxed slice containing several spi_ioc_transfers
-    let mut raw_transfers = transfers
-        .iter()
-        .map(|transfer| transfer.as_spi_ioc_transfer())
-        .collect::<Vec<_>>()
-        .into_boxed_slice();
+    let mut raw_transfers = transfers.iter()
+                                     .map(|transfer| transfer.as_spi_ioc_transfer())
+                                     .collect::<Vec<_>>()
+                                     .into_boxed_slice();
     let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
 
     try!(from_nix_result(unsafe {
