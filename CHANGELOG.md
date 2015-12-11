@@ -1,5 +1,13 @@
 # Spidev Crate Changelog
 
+## 0.2.0 / 2015-12-10
+
+[Full Changelog](https://github.com/posborne/rust-spidev/compare/0.1.0...0.2.0)
+
+- Miscellaneous non-functional code changes
+- Updates to work with upstream versions of nix and other libraries
+- Minor API changes and testing improvements
+
 ## 0.1.0 / 2015-05-19
 
 [Full Changelog](https://github.com/posborne/rust-spidev/compare/0baf4916a6276315e28aef6a8508b10f8d35276f...0.1.0)
