@@ -13,15 +13,6 @@ use std::mem;
 use std::os::unix::prelude::*;
 use super::SpiModeFlags;
 
-const SPI_IOC_MAGIC: u8 = 'k' as u8;
-
-const SPI_IOC_NR_TRANSFER: u8 = 0;
-const SPI_IOC_NR_MODE: u8 = 1;
-const SPI_IOC_NR_LSB_FIRST: u8 = 2;
-const SPI_IOC_NR_BITS_PER_WORD: u8 = 3;
-const SPI_IOC_NR_MAX_SPEED_HZ: u8 = 4;
-const SPI_IOC_NR_MODE32: u8 = 5;
-
 fn from_nix_error(err: ::nix::Error) -> io::Error {
     io::Error::from_raw_os_error(err.errno() as i32)
 }
@@ -75,7 +66,7 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
 #[repr(C)]
-struct spi_ioc_transfer {
+pub struct spi_ioc_transfer {
     pub tx_buf: u64,
     pub rx_buf: u64,
     pub len: u32,
@@ -86,6 +77,39 @@ struct spi_ioc_transfer {
     pub bits_per_word: u8,
     pub cs_change: u8,
     pub pad: u32,
+}
+
+mod ioctl {
+    use super::{spi_ioc_transfer};
+
+    const SPI_IOC_MAGIC: u8 = 'k' as u8;
+    const SPI_IOC_NR_TRANSFER: u8 = 0;
+    const SPI_IOC_NR_MODE: u8 = 1;
+    const SPI_IOC_NR_LSB_FIRST: u8 = 2;
+    const SPI_IOC_NR_BITS_PER_WORD: u8 = 3;
+    const SPI_IOC_NR_MAX_SPEED_HZ: u8 = 4;
+    const SPI_IOC_NR_MODE32: u8 = 5;
+
+    ioctl!(read get_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
+    ioctl!(read get_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u32);
+    ioctl!(write set_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
+    ioctl!(write set_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE32; u32);
+
+    ioctl!(read  get_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
+    ioctl!(write set_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
+
+    ioctl!(read  get_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
+    ioctl!(write set_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
+
+    ioctl!(read  get_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
+    ioctl!(write set_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
+
+    // NOTE: this macro works for single transfers but cannot properly
+    // calculate size for multi transfer whose length we will not know
+    // until runtime.  We fallback to using the underlying ioctl for that
+    // use case.
+    ioctl!(write spidev_transfer with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
+    ioctl!(write buf spidev_transfer_buf with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
 }
 
 /// Representation of a spidev transfer that is shared
@@ -148,14 +172,10 @@ impl SpidevTransfer {
     }
 }
 
-ioctl!(read ioctl_get_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
-ioctl!(read ioctl_get_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u32);
-ioctl!(write ioctl_set_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
-ioctl!(write ioctl_set_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE32; u32);
 
 pub fn get_mode(fd: RawFd) -> io::Result<u8> {
     let mut mode: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl_get_mode_u8(fd, &mut mode) }));
+    try!(from_nix_result(unsafe { ioctl::get_mode_u8(fd, &mut mode) }));
     Ok(mode)
 }
 
@@ -165,63 +185,47 @@ pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // added until later kernels.  This provides a reasonable story
     // for forwards and backwards compatibility
     if (mode.bits & 0xFFFFFF00) != 0 {
-        try!(from_nix_result(unsafe { ioctl_set_mode_u32(fd, &mode.bits) }));
+        try!(from_nix_result(unsafe { ioctl::set_mode_u32(fd, &mode.bits) }));
     } else {
         let bits: u8 = mode.bits as u8;
-        try!(from_nix_result(unsafe { ioctl_set_mode_u8(fd, &bits) }));
+        try!(from_nix_result(unsafe { ioctl::set_mode_u8(fd, &bits) }));
     }
     Ok(())
 }
 
-ioctl!(read  ioctl_get_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
-ioctl!(write ioctl_set_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
-
 pub fn get_lsb_first(fd: RawFd) -> io::Result<u8> {
     let mut lsb_first: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl_get_lsb_first(fd, &mut lsb_first) }));
+    try!(from_nix_result(unsafe { ioctl::get_lsb_first(fd, &mut lsb_first) }));
     Ok(lsb_first)
 }
 
 pub fn set_lsb_first(fd: RawFd, lsb_first: bool) -> io::Result<()> {
     let lsb_first_value: u8 = if lsb_first { 1 } else { 0 };
-    try!(from_nix_result(unsafe { ioctl_set_lsb_first(fd, &lsb_first_value) }));
+    try!(from_nix_result(unsafe { ioctl::set_lsb_first(fd, &lsb_first_value) }));
     Ok(())
 }
 
-ioctl!(read  ioctl_get_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
-ioctl!(write ioctl_set_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
-
 pub fn get_bits_per_word(fd: RawFd) -> io::Result<u8> {
     let mut bits_per_word: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl_get_bits_per_word(fd, &mut bits_per_word)} ));
+    try!(from_nix_result(unsafe { ioctl::get_bits_per_word(fd, &mut bits_per_word)} ));
     Ok(bits_per_word)
 }
 
 pub fn set_bits_per_word(fd: RawFd, bits_per_word: u8) -> io::Result<()> {
-    try!(from_nix_result(unsafe { ioctl_set_bits_per_word(fd, &bits_per_word) }));
+    try!(from_nix_result(unsafe { ioctl::set_bits_per_word(fd, &bits_per_word) }));
     Ok(())
 }
 
-ioctl!(read  ioctl_get_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
-ioctl!(write ioctl_set_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
-
 pub fn get_max_speed_hz(fd: RawFd) -> io::Result<u32> {
     let mut max_speed_hz: u32 = 0;
-    try!(from_nix_result(unsafe { ioctl_get_max_speed_hz(fd, &mut max_speed_hz)} ));
+    try!(from_nix_result(unsafe { ioctl::get_max_speed_hz(fd, &mut max_speed_hz)} ));
     Ok(max_speed_hz)
 }
 
 pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
-    try!(from_nix_result(unsafe { ioctl_set_max_speed_hz(fd, &max_speed_hz) }));
+    try!(from_nix_result(unsafe { ioctl::set_max_speed_hz(fd, &max_speed_hz) }));
     Ok(())
 }
-
-// NOTE: this macro works for single transfers but cannot properly
-// calculate size for multi transfer whose length we will not know
-// until runtime.  We fallback to using the underlying ioctl for that
-// use case.
-ioctl!(write ioctl_spidev_transfer with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
-ioctl!(write buf ioctl_spidev_transfer_buf with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
 
 pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     let mut raw_transfer = transfer.as_spi_ioc_transfer();
@@ -229,7 +233,7 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
     try!(from_nix_result(unsafe {
-        ioctl_spidev_transfer(fd, &mut raw_transfer)
+        ioctl::spidev_transfer(fd, &mut raw_transfer)
     }));
     Ok(())
 }
@@ -244,7 +248,7 @@ pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Resu
     let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
 
     try!(from_nix_result(unsafe {
-        ioctl_spidev_transfer_buf(fd, raw_transfers.as_mut_ptr(), tot_size)
+        ioctl::spidev_transfer_buf(fd, raw_transfers.as_mut_ptr(), tot_size)
     }));
     Ok(())
 }
