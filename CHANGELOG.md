@@ -1,5 +1,11 @@
 # Spidev Crate Changelog
 
+## 0.2.0 / 2016-4-12
+
+[Full Changelog](https://github.com/posborne/rust-spidev/compare/0.2.0...0.2.1)
+
+- Bump to newer version of nix to support older versions of rust
+
 ## 0.2.0 / 2015-12-10
 
 [Full Changelog](https://github.com/posborne/rust-spidev/compare/0.1.0...0.2.0)
