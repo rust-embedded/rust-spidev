@@ -247,7 +247,9 @@ impl Spidev {
     /// Chaining together multiple requests like this can reduce latency
     /// and be used for conveniently and efficient implementing some
     /// protocols without extra round trips back to userspace.
-    pub fn transfer_multiple(&self, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
+    pub fn transfer_multiple<'a, I>(&self, transfers: I) -> io::Result<()>
+        where I: IntoIterator<Item = &'a SpidevTransfer>
+    {
         spidevioctl::transfer_multiple(self.devfile.as_raw_fd(), transfers)
     }
 }
