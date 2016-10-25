@@ -240,9 +240,11 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     Ok(())
 }
 
-pub fn transfer_multiple(fd: RawFd, transfers: &Vec<SpidevTransfer>) -> io::Result<()> {
+pub fn transfer_multiple<'a, I>(fd: RawFd, transfers: I) -> io::Result<()>
+    where I: IntoIterator<Item = &'a SpidevTransfer>
+{
     // create a boxed slice containing several spi_ioc_transfers
-    let mut raw_transfers = transfers.iter()
+    let mut raw_transfers = transfers.into_iter()
                                      .map(|transfer| transfer.as_spi_ioc_transfer())
                                      .collect::<Vec<_>>()
                                      .into_boxed_slice();
