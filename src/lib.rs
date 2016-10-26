@@ -51,9 +51,13 @@
 //! fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
 //!     // "write" transfers are also reads at the same time with
 //!     // the read having the same length as the write
-//!     let mut transfer = SpidevTransfer::write(&[0x01, 0x02, 0x03]);
-//!     try!(spi.transfer(&mut transfer));
-//!     println!("{:?}", transfer.rx_buf);
+//!     let tx_buf = [0x01, 0x02, 0x03];
+//!     let mut rx_buf = [0; 3];
+//!     {
+//!         let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
+//!         try!(spi.transfer(&mut transfer));
+//!     }
+//!     println!("{:?}", rx_buf);
 //!     Ok(())
 //! }
 //!
@@ -247,9 +251,7 @@ impl Spidev {
     /// Chaining together multiple requests like this can reduce latency
     /// and be used for conveniently and efficient implementing some
     /// protocols without extra round trips back to userspace.
-    pub fn transfer_multiple<'a, I>(&self, transfers: I) -> io::Result<()>
-        where I: IntoIterator<Item = &'a SpidevTransfer>
-    {
+    pub fn transfer_multiple(&self, transfers: &mut [SpidevTransfer]) -> io::Result<()> {
         spidevioctl::transfer_multiple(self.devfile.as_raw_fd(), transfers)
     }
 }
