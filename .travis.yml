@@ -1,30 +1,18 @@
 language: rust
 sudo: false
 rust:
-  - 1.2.0
-  - 1.3.0
-  - 1.4.0
-  - 1.5.0
-  - 1.6.0
   - 1.7.0
   - stable
   - beta
   - nightly
-env:
-  global:
-    - secure: cJteZ1LbDExDnUMJqWrPQwHNWFDJOP5OH1zYX8j1nkJ91paDqBogCuHslooSDcrewnCmTLawv8na1KjGMZ2y3mwn26GhF5TfXsY+vHATIyex+z2fGOgCOlx47MSRdK7A30Pl66Ye/oboDX7iTqc+uzNucoutOB/ji4euD6wOu1g=
+
+before_script:
+  - pip install 'travis-cargo<0.2' --user
+
 script:
   - cargo build --verbose
   - cargo test --verbose
-  - cargo doc
+  - travis-cargo --only stable doc
 
-# Publish documentation on successfull master build
-# using the ghp-import python package
-after_success: ! '[ $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ]
-  && echo "<meta http-equiv=refresh content=0;url=spidev/index.html>" > target/doc/index.html
-  && sudo pip install ghp-import
-  && ghp-import -n target/doc
-  && git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages'
-
-notifications:
-  webhooks: http://rust-embedded-bot.herokuapp.com/travis
+after_success:
+  - travis-cargo --only stable doc-upload
