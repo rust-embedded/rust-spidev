@@ -1,6 +1,17 @@
 # Spidev Crate Changelog
 
-## 0.2.0 / 2016-4-12
+## 0.3.0 / 2016-10-26
+
+- The older supported version of rustc for this release is 1.7.0
+- Bump to nix 0.6.0
+- [transfer_multiple](http://posborne.github.io/rust-spidev/spidev/struct.Spidev.html#method.transfer_multiple) now
+  receives an `IntoIterator` rather than requiring that a Vec reference be
+  provided. ([#7](https://github.com/rust-embedded/rust-spidev/pull/7))
+- [transfer_multiple](http://posborne.github.io/rust-spidev/spidev/struct.Spidev.html#method.transfer_multiple) no
+  longer performs heap allocations internally (nor does it require heap
+  allocations to be used). ([#8](https://github.com/rust-embedded/rust-spidev/pull/8))
+
+## 0.2.1 / 2016-4-12
 
 [Full Changelog](https://github.com/posborne/rust-spidev/compare/0.2.0...0.2.1)
 
