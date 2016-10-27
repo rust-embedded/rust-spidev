@@ -2,18 +2,6 @@ extern crate spidev;
 use spidev::{Spidev, SpidevOptions, SPI_MODE_0};
 use spidev::spidevioctl::SpidevTransfer;
 
-fn pprint_transfer(transfer: &SpidevTransfer) {
-    match transfer.rx_buf {
-        None => println!("Empty!"),
-        Some(ref rx_buf) => {
-            for b in rx_buf.iter() {
-                print!("{:?} ", b);
-            }
-            println!("");
-        }
-    }
-}
-
 fn main() {
     let mut spidev = Spidev::open("/dev/spidev0.0").unwrap();
     let options = SpidevOptions::new()
@@ -25,22 +13,27 @@ fn main() {
     spidev.configure(&options).unwrap();
 
     println!("===== Single transfer =========");
-    let mut transfer = SpidevTransfer::write(&[0xaa, 0xbb, 0xcc, 0xdd, 0xee]);
-    match spidev.transfer(&mut transfer) {
-        Ok(_) => pprint_transfer(&transfer),
-        Err(err) => println!("{:?}", err),
-    }
+    let tx_buf = [0xaa, 0xbb, 0xcc, 0xdd, 0xee];
+    let mut rx_buf = [0; 5];
+    let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
+    println!("{:?}", spidev.transfer(&mut transfer));
 
     println!("===== Multi Transfer =========");
-    let transfers = vec![SpidevTransfer::read(10),
-                         SpidevTransfer::write(&[0x00, 0x01, 0x02, 0x03]),
-                         SpidevTransfer::write(&[0xff, 0xfe, 0xfd])];
-    match spidev.transfer_multiple(&transfers) {
+    let mut rx_buf1 = [0; 10];
+    let tx_buf2 = [0x00, 0x01, 0x02, 0x03];
+    let tx_buf3 = [0xff, 0xfe, 0xfd];
+    let mut rx_buf3 = [0; 3];
+    let result = {
+        let mut transfers = vec![SpidevTransfer::read(&mut rx_buf1),
+                             SpidevTransfer::write(&tx_buf2),
+                             SpidevTransfer::read_write(&tx_buf3, &mut rx_buf3)];
+        spidev.transfer_multiple(&mut transfers)
+    };
+    match result {
         Ok(_) => {
-            for (i, transfer) in transfers.iter().enumerate() {
-                println!("{}...", i);
-                pprint_transfer(transfer);
-            }
+            println!("Read {:?}", rx_buf1);
+            println!("Wrote {:?}", tx_buf2);
+            println!("Wrote {:?} and read {:?}", tx_buf3, rx_buf3);
         }
         Err(err) => println!("{:?}", err),
     }

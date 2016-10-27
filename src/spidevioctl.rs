@@ -9,6 +9,7 @@
 #![allow(dead_code)]
 
 use std::io;
+use std::marker::PhantomData;
 use std::mem;
 use std::os::unix::prelude::*;
 use super::SpiModeFlags;
@@ -64,12 +65,12 @@ fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
 /// last transfer might write some register values.
 /// ```
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[repr(C)]
-pub struct spi_ioc_transfer {
-    pub tx_buf: u64,
-    pub rx_buf: u64,
-    pub len: u32,
+pub struct spi_ioc_transfer<'a, 'b> {
+    tx_buf: u64,
+    rx_buf: u64,
+    len: u32,
 
     // optional overrides
     pub speed_hz: u32,
@@ -77,6 +78,38 @@ pub struct spi_ioc_transfer {
     pub bits_per_word: u8,
     pub cs_change: u8,
     pub pad: u32,
+
+    tx_buf_ref: PhantomData<&'a [u8]>,
+    rx_buf_ref: PhantomData<&'b mut [u8]>,
+}
+
+impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
+    pub fn read(buff: &'b mut [u8]) -> Self {
+        spi_ioc_transfer {
+            rx_buf: buff.as_ptr() as *const () as usize as u64,
+            len: buff.len() as u32,
+            ..Default::default()
+        }
+    }
+
+    pub fn write(buff: &'a [u8]) -> Self {
+        spi_ioc_transfer {
+            tx_buf: buff.as_ptr() as *const () as usize as u64,
+            len: buff.len() as u32,
+            ..Default::default()
+        }
+    }
+
+    /// The `tx_buf` and `rx_buf` must be the same length.
+    pub fn read_write(tx_buf: &'a [u8], rx_buf: &'b mut [u8]) -> Self {
+        assert_eq!(tx_buf.len(), rx_buf.len());
+        spi_ioc_transfer {
+            rx_buf: rx_buf.as_ptr() as *const () as usize as u64,
+            tx_buf: tx_buf.as_ptr() as *const () as usize as u64,
+            len: tx_buf.len() as u32,
+            ..Default::default()
+        }
+    }
 }
 
 mod ioctl {
@@ -114,64 +147,7 @@ mod ioctl {
 
 /// Representation of a spidev transfer that is shared
 /// with external users
-#[derive(Default)]
-pub struct SpidevTransfer {
-    pub tx_buf: Option<Box<[u8]>>,
-    pub rx_buf: Option<Box<[u8]>>,
-    len: u32,
-    speed_hz: u32,
-    delay_usecs: u16,
-    bits_per_word: u8,
-    cs_change: u8,
-    pad: u32,
-}
-
-impl SpidevTransfer {
-    pub fn read(length: usize) -> SpidevTransfer {
-        SpidevTransfer {
-            tx_buf: None,
-            rx_buf: Some(vec![0u8; length].into_boxed_slice()),
-            len: length as u32,
-            ..Default::default()
-        }
-    }
-
-    pub fn write(tx_buf: &[u8]) -> SpidevTransfer {
-        let len = tx_buf.len();
-        let rx_buf_vec: Vec<u8> = vec![0; len];
-        let mut tx_buf_vec = Vec::with_capacity(len);
-        for i in 0..len {
-            tx_buf_vec.push(tx_buf[i]);
-        }
-
-        SpidevTransfer {
-            tx_buf: Some(tx_buf_vec.into_boxed_slice()),
-            rx_buf: Some(rx_buf_vec.into_boxed_slice()),
-            len: tx_buf.len() as u32,
-            ..Default::default()
-        }
-    }
-
-    fn as_spi_ioc_transfer(&self) -> spi_ioc_transfer {
-        spi_ioc_transfer {
-            tx_buf: match self.tx_buf {
-                Some(ref bufbox) => bufbox.as_ptr() as u64,
-                None => 0,
-            },
-            rx_buf: match self.rx_buf {
-                Some(ref bufbox) => bufbox.as_ptr() as u64,
-                None => 0,
-            },
-            len: self.len,
-            speed_hz: self.speed_hz,
-            delay_usecs: self.delay_usecs,
-            bits_per_word: self.bits_per_word,
-            cs_change: self.cs_change,
-            pad: self.pad,
-        }
-    }
-}
-
+pub type SpidevTransfer<'a, 'b> = spi_ioc_transfer<'a, 'b>;
 
 pub fn get_mode(fd: RawFd) -> io::Result<u8> {
     let mut mode: u8 = 0;
@@ -232,26 +208,17 @@ pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
 }
 
 pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
-    let mut raw_transfer = transfer.as_spi_ioc_transfer();
-
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
-    try!(from_nix_result(unsafe { ioctl::spidev_transfer(fd, &mut raw_transfer) }));
+    try!(from_nix_result(unsafe { ioctl::spidev_transfer(fd, transfer) }));
     Ok(())
 }
 
-pub fn transfer_multiple<'a, I>(fd: RawFd, transfers: I) -> io::Result<()>
-    where I: IntoIterator<Item = &'a SpidevTransfer>
-{
-    // create a boxed slice containing several spi_ioc_transfers
-    let mut raw_transfers = transfers.into_iter()
-                                     .map(|transfer| transfer.as_spi_ioc_transfer())
-                                     .collect::<Vec<_>>()
-                                     .into_boxed_slice();
-    let tot_size = raw_transfers.len() * mem::size_of::<spi_ioc_transfer>();
+pub fn transfer_multiple(fd: RawFd, transfers: &mut [SpidevTransfer]) -> io::Result<()> {
+    let tot_size = transfers.len() * mem::size_of::<SpidevTransfer>();
 
     try!(from_nix_result(unsafe {
-        ioctl::spidev_transfer_buf(fd, raw_transfers.as_mut_ptr(), tot_size)
+        ioctl::spidev_transfer_buf(fd, transfers.as_mut_ptr(), tot_size)
     }));
     Ok(())
 }
