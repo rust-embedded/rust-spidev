@@ -5,7 +5,7 @@ Rust Spidev
 [![Version](https://img.shields.io/crates/v/spidev.svg)](https://crates.io/crates/spidev)
 [![License](https://img.shields.io/crates/l/spidev.svg)](https://github.com/rust-embedded/rust-spidev/blob/master/README.md#license)
 
-[Documentation](https://rust-embedded.github.io/rust-spidev)
+[Documentation](https://docs.rs/spidev)
 
 The Rust `spidev` seeks to provide full access to the Linux spidev
 device in Rust without the need to wrap any C code or directly make

@@ -1,18 +1,11 @@
 language: rust
 sudo: false
 rust:
-  - 1.7.0
+  - 1.22.1
   - stable
   - beta
   - nightly
 
-before_script:
-  - pip install 'travis-cargo<0.2' --user
-
 script:
   - cargo build --verbose
   - cargo test --verbose
-  - travis-cargo --only stable doc
-
-after_success:
-  - travis-cargo --only stable doc-upload
