@@ -1,5 +1,4 @@
-Rust Spidev
-===========
+# Rust Spidev
 
 [![Build Status](https://travis-ci.org/rust-embedded/rust-spidev.svg?branch=master)](https://travis-ci.org/rust-embedded/rust-spidev)
 [![Version](https://img.shields.io/crates/v/spidev.svg)](https://crates.io/crates/spidev)
@@ -12,8 +11,7 @@ device in Rust without the need to wrap any C code or directly make
 low-level system calls.  The documentation for the spidev interace can
 be found at https://www.kernel.org/doc/Documentation/spi/spidev.
 
-Example/API
------------
+## Example/API
 
 The following is not an exhaustive demonstration of the Spidev
 interface but provides a pretty good idea of how to use the library in
@@ -66,8 +64,7 @@ fn main() {
 }
 ```
 
-Features
---------
+## Features
 
 The following features are implemented and planned for the library:
 
@@ -77,8 +74,7 @@ The following features are implemented and planned for the library:
 - [x] Support for configuring spidev device
 - [ ] Support for querying spidev configuration state
 
-Cross Compiling
----------------
+## Cross Compiling
 
 Most likely, the machine you are running on is not your development
 machine (although it could be).  In those cases, you will need to
@@ -106,13 +102,27 @@ The following snippet added to my ~/.cargo/config worked for me:
 linker = "arm-linux-gnueabihf-gcc"
 ```
 
-License
--------
+## License
 
-Copyright (c) 2015, Paul Osborne <ospbau@gmail.com>
+Licensed under either of
 
-Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-http://www.apache.org/license/LICENSE-2.0> or the MIT license
-<LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-option.  This file may not be copied, modified, or distributed
-except according to those terms.
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
+  http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
+## Code of Conduct
+
+Contribution to this crate is organized under the terms of the [Rust Code of
+Conduct][CoC], the maintainer of this crate, the [Embedded Linux Team][team], promises
+to intervene to uphold that code of conduct.
+
+[CoC]: CODE_OF_CONDUCT.md
+[team]: https://github.com/rust-embedded/wg#the-embedded-linux-team
