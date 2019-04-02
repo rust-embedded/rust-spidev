@@ -206,18 +206,34 @@ impl SpidevOptions {
 }
 
 impl Spidev {
+    /// Wrap an already opened [`File`] for use as an spidev
+    pub fn new(devfile: File) -> Self {
+        Self { devfile }
+    }
+
+
     /// Open the spidev device with the provided path
     ///
     /// Typically, the path will be something like `"/dev/spidev0.0"`
     /// where the first number if the bus and the second number
     /// is the chip select on that bus for the device being targeted.
     pub fn open<P: AsRef<Path>>(path: P) -> io::Result<Spidev> {
-        let devfile = try!(OpenOptions::new()
-                               .read(true)
-                               .write(true)
-                               .create(false)
-                               .open(path));
-        Ok(Spidev { devfile: devfile })
+        let devfile = OpenOptions::new()
+                          .read(true)
+                          .write(true)
+                          .create(false)
+                          .open(path)?;
+        Ok(Self::new(devfile))
+    }
+
+    /// Get a reference to the underlying [`File`] object
+    pub fn inner(&self) -> &File {
+        &self.devfile
+    }
+
+    /// Consume the object and get the underlying [`File`] object
+    pub fn into_inner(self) -> File {
+        self.devfile
     }
 
     /// Write the provided configuration to this device
