@@ -1,5 +1,5 @@
 extern crate spidev;
-use spidev::{Spidev, SpidevOptions, SPI_MODE_0};
+use spidev::{Spidev, SpidevOptions, SpiModeFlags};
 use spidev::spidevioctl::SpidevTransfer;
 
 fn main() {
@@ -8,7 +8,7 @@ fn main() {
                       .bits_per_word(8)
                       .max_speed_hz(5000)
                       .lsb_first(false)
-                      .mode(SPI_MODE_0)
+                      .mode(SpiModeFlags::SPI_MODE_0)
                       .build();
     spidev.configure(&options).unwrap();
 
