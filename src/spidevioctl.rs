@@ -8,14 +8,14 @@
 
 #![allow(dead_code)]
 
+use nix;
 use std::io;
 use std::marker::PhantomData;
-use std::mem;
 use std::os::unix::prelude::*;
 use super::SpiModeFlags;
 
 fn from_nix_error(err: ::nix::Error) -> io::Error {
-    io::Error::from_raw_os_error(err.errno() as i32)
+    io::Error::from_raw_os_error(err.as_errno().unwrap_or_else(|| nix::errno::Errno::UnknownErrno) as i32)
 }
 
 fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
@@ -123,26 +123,26 @@ mod ioctl {
     const SPI_IOC_NR_MAX_SPEED_HZ: u8 = 4;
     const SPI_IOC_NR_MODE32: u8 = 5;
 
-    ioctl!(read get_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
-    ioctl!(read get_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u32);
-    ioctl!(write set_mode_u8 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE; u8);
-    ioctl!(write set_mode_u32 with SPI_IOC_MAGIC, SPI_IOC_NR_MODE32; u32);
+    ioctl_read!(get_mode_u8, SPI_IOC_MAGIC, SPI_IOC_NR_MODE, u8);
+    ioctl_read!(get_mode_u32, SPI_IOC_MAGIC, SPI_IOC_NR_MODE32, u32);
+    ioctl_write_ptr!(set_mode, SPI_IOC_MAGIC, SPI_IOC_NR_MODE, u8);
+    ioctl_write_ptr!(set_mode32, SPI_IOC_MAGIC, SPI_IOC_NR_MODE32, u32);
 
-    ioctl!(read  get_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
-    ioctl!(write set_lsb_first with SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST; u8);
+    ioctl_read!(get_lsb_first, SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST, u8);
+    ioctl_write_ptr!(set_lsb_first, SPI_IOC_MAGIC, SPI_IOC_NR_LSB_FIRST, u8);
 
-    ioctl!(read  get_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
-    ioctl!(write set_bits_per_word with SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD; u8);
+    ioctl_read!(get_bits_per_word, SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD, u8);
+    ioctl_write_ptr!(set_bits_per_word, SPI_IOC_MAGIC, SPI_IOC_NR_BITS_PER_WORD, u8);
 
-    ioctl!(read  get_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
-    ioctl!(write set_max_speed_hz with SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ; u32);
+    ioctl_read!(get_max_speed_hz, SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ, u32);
+    ioctl_write_ptr!(set_max_speed_hz, SPI_IOC_MAGIC, SPI_IOC_NR_MAX_SPEED_HZ, u32);
 
     // NOTE: this macro works for single transfers but cannot properly
     // calculate size for multi transfer whose length we will not know
     // until runtime.  We fallback to using the underlying ioctl for that
     // use case.
-    ioctl!(write spidev_transfer with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
-    ioctl!(write buf spidev_transfer_buf with SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER; spi_ioc_transfer);
+    ioctl_write_ptr!(spidev_transfer, SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER, spi_ioc_transfer);
+    ioctl_write_buf!(spidev_transfer_buf, SPI_IOC_MAGIC, SPI_IOC_NR_TRANSFER, spi_ioc_transfer);
 }
 
 /// Representation of a spidev transfer that is shared
@@ -161,10 +161,10 @@ pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // added until later kernels.  This provides a reasonable story
     // for forwards and backwards compatibility
     if (mode.bits & 0xFFFFFF00) != 0 {
-        try!(from_nix_result(unsafe { ioctl::set_mode_u32(fd, &mode.bits) }));
+        try!(from_nix_result(unsafe { ioctl::set_mode32(fd, &mode.bits) }));
     } else {
         let bits: u8 = mode.bits as u8;
-        try!(from_nix_result(unsafe { ioctl::set_mode_u8(fd, &bits) }));
+        try!(from_nix_result(unsafe { ioctl::set_mode(fd, &bits) }));
     }
     Ok(())
 }
@@ -215,10 +215,8 @@ pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: &mut [SpidevTransfer]) -> io::Result<()> {
-    let tot_size = transfers.len() * mem::size_of::<SpidevTransfer>();
-
     try!(from_nix_result(unsafe {
-        ioctl::spidev_transfer_buf(fd, transfers.as_mut_ptr(), tot_size)
+        ioctl::spidev_transfer_buf(fd, transfers)
     }));
     Ok(())
 }

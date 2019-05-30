@@ -25,14 +25,14 @@
 //! extern crate spidev;
 //! use std::io;
 //! use std::io::prelude::*;
-//! use spidev::{Spidev, SpidevOptions, SpidevTransfer, SPI_MODE_0};
+//! use spidev::{Spidev, SpidevOptions, SpidevTransfer, SpiModeFlags};
 //!
 //! fn create_spi() -> io::Result<Spidev> {
 //!     let mut spi = try!(Spidev::open("/dev/spidev0.0"));
 //!     let options = SpidevOptions::new()
 //!          .bits_per_word(8)
 //!          .max_speed_hz(20_000)
-//!          .mode(SPI_MODE_0)
+//!          .mode(SpiModeFlags::SPI_MODE_0)
 //!          .build();
 //!     try!(spi.configure(&options));
 //!     Ok(spi)
@@ -85,40 +85,40 @@ use std::os::unix::prelude::*;
 
 // Constants extracted from linux/spi/spidev.h
 bitflags! {
-    flags SpiModeFlags: u32 {
+    pub struct SpiModeFlags: u32 {
         /// Clock Phase
-        const SPI_CPHA = 0x01,
+        const SPI_CPHA = 0x01;
         /// Clock Polarity
-        const SPI_CPOL = 0x02,
+        const SPI_CPOL = 0x02;
         /// Chipselect Active High?
-        const SPI_CS_HIGH = 0x04,
+        const SPI_CS_HIGH = 0x04;
         /// Per-word Bits On Wire
-        const SPI_LSB_FIRST = 0x08,
+        const SPI_LSB_FIRST = 0x08;
         /// SI/SO Signals Shared
-        const SPI_3WIRE = 0x10,
+        const SPI_3WIRE = 0x10;
         /// Loopback Mode
-        const SPI_LOOP = 0x20,
-        /// 1 dev/bus, no chipselect
-        const SPI_NO_CS = 0x40,
+        const SPI_LOOP = 0x20;
+        /// 1 dev/bus; no chipselect
+        const SPI_NO_CS = 0x40;
         /// Slave pulls low to pause
-        const SPI_READY = 0x80,
+        const SPI_READY = 0x80;
 
         // Common Configurations
-        const SPI_MODE_0 = 0x00,
-        const SPI_MODE_1 = SPI_CPHA.bits,
-        const SPI_MODE_2 = SPI_CPOL.bits,
-        const SPI_MODE_3 = (SPI_CPOL.bits | SPI_CPHA.bits),
+        const SPI_MODE_0 = 0x00;
+        const SPI_MODE_1 = Self::SPI_CPHA.bits;
+        const SPI_MODE_2 = Self::SPI_CPOL.bits;
+        const SPI_MODE_3 = (Self::SPI_CPOL.bits | Self::SPI_CPHA.bits);
 
         // == Only Supported with 32-bits ==
 
         /// Transmit with 2 wires
-        const SPI_TX_DUAL = 0x100,
+        const SPI_TX_DUAL = 0x100;
         /// Transmit with 4 wires
-        const SPI_TX_QUAD = 0x200,
+        const SPI_TX_QUAD = 0x200;
         /// Receive with 2 wires
-        const SPI_RX_DUAL = 0x400,
+        const SPI_RX_DUAL = 0x400;
         /// Receive with 4 wires
-        const SPI_RX_QUAD = 0x800,
+        const SPI_RX_QUAD = 0x800;
     }
 }
 
@@ -290,8 +290,7 @@ impl Write for Spidev {
 
 #[cfg(test)]
 mod test {
-
-    use super::{SpidevOptions, SPI_MODE_0};
+    use super::{SpidevOptions, SpiModeFlags};
 
     #[test]
     fn test_spidev_options_all() {
@@ -299,12 +298,12 @@ mod test {
                           .bits_per_word(8)
                           .max_speed_hz(20_000)
                           .lsb_first(false)
-                          .mode(SPI_MODE_0)
+                          .mode(SpiModeFlags::SPI_MODE_0)
                           .build();
         assert_eq!(options.bits_per_word, Some(8));
         assert_eq!(options.max_speed_hz, Some(20_000));
         assert_eq!(options.lsb_first, Some(false));
-        assert_eq!(options.spi_mode, Some(SPI_MODE_0));
+        assert_eq!(options.spi_mode, Some(SpiModeFlags::SPI_MODE_0));
     }
 
     #[test]
