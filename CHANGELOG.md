@@ -1,6 +1,17 @@
 # Spidev Crate Changelog
 
+## 0.4.0 / 2019-05-29
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.3.0...0.4.0)
+
+- Bitflags dep bumped to 1.0
+- Nix bumped to 0.14
+- Minimum supported rust version is now 1.26.0
+- APIs added to expose underlying file object ([#13](https://github.com/rust-embedded/rust-spidev/pull/13)).
+
 ## 0.3.0 / 2016-10-26
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.2.1...0.3.0)
 
 - The older supported version of rustc for this release is 1.7.0
 - Bump to nix 0.6.0
