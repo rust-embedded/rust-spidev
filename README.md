@@ -76,8 +76,8 @@ The following features are implemented and planned for the library:
 
 ## Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.26 and up.  It *might*
-compile with older versions but that may change in any new patch release.
+This crate is guaranteed to compile on stable Rust 1.31 and up (as it requires
+marked as edition 2018).
 
 ## Cross Compiling
 
