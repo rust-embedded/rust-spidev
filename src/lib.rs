@@ -75,7 +75,7 @@ extern crate nix;
 extern crate bitflags;
 
 pub mod spidevioctl;
-pub use spidevioctl::SpidevTransfer;
+pub use crate::spidevioctl::SpidevTransfer;
 
 use std::io;
 use std::io::prelude::*;
