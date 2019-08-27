@@ -151,7 +151,7 @@ pub type SpidevTransfer<'a, 'b> = spi_ioc_transfer<'a, 'b>;
 
 pub fn get_mode(fd: RawFd) -> io::Result<u8> {
     let mut mode: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_mode_u8(fd, &mut mode) }));
+    from_nix_result(unsafe { ioctl::get_mode_u8(fd, &mut mode) })?;
     Ok(mode)
 }
 
@@ -161,17 +161,17 @@ pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // added until later kernels.  This provides a reasonable story
     // for forwards and backwards compatibility
     if (mode.bits & 0xFFFFFF00) != 0 {
-        try!(from_nix_result(unsafe { ioctl::set_mode32(fd, &mode.bits) }));
+        from_nix_result(unsafe { ioctl::set_mode32(fd, &mode.bits) })?;
     } else {
         let bits: u8 = mode.bits as u8;
-        try!(from_nix_result(unsafe { ioctl::set_mode(fd, &bits) }));
+        from_nix_result(unsafe { ioctl::set_mode(fd, &bits) })?;
     }
     Ok(())
 }
 
 pub fn get_lsb_first(fd: RawFd) -> io::Result<u8> {
     let mut lsb_first: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_lsb_first(fd, &mut lsb_first) }));
+    from_nix_result(unsafe { ioctl::get_lsb_first(fd, &mut lsb_first) })?;
     Ok(lsb_first)
 }
 
@@ -181,42 +181,42 @@ pub fn set_lsb_first(fd: RawFd, lsb_first: bool) -> io::Result<()> {
     } else {
         0
     };
-    try!(from_nix_result(unsafe { ioctl::set_lsb_first(fd, &lsb_first_value) }));
+    from_nix_result(unsafe { ioctl::set_lsb_first(fd, &lsb_first_value) })?;
     Ok(())
 }
 
 pub fn get_bits_per_word(fd: RawFd) -> io::Result<u8> {
     let mut bits_per_word: u8 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_bits_per_word(fd, &mut bits_per_word) }));
+    from_nix_result(unsafe { ioctl::get_bits_per_word(fd, &mut bits_per_word) })?;
     Ok(bits_per_word)
 }
 
 pub fn set_bits_per_word(fd: RawFd, bits_per_word: u8) -> io::Result<()> {
-    try!(from_nix_result(unsafe { ioctl::set_bits_per_word(fd, &bits_per_word) }));
+    from_nix_result(unsafe { ioctl::set_bits_per_word(fd, &bits_per_word) })?;
     Ok(())
 }
 
 pub fn get_max_speed_hz(fd: RawFd) -> io::Result<u32> {
     let mut max_speed_hz: u32 = 0;
-    try!(from_nix_result(unsafe { ioctl::get_max_speed_hz(fd, &mut max_speed_hz) }));
+    from_nix_result(unsafe { ioctl::get_max_speed_hz(fd, &mut max_speed_hz) })?;
     Ok(max_speed_hz)
 }
 
 pub fn set_max_speed_hz(fd: RawFd, max_speed_hz: u32) -> io::Result<()> {
-    try!(from_nix_result(unsafe { ioctl::set_max_speed_hz(fd, &max_speed_hz) }));
+    from_nix_result(unsafe { ioctl::set_max_speed_hz(fd, &max_speed_hz) })?;
     Ok(())
 }
 
 pub fn transfer(fd: RawFd, transfer: &mut SpidevTransfer) -> io::Result<()> {
     // The kernel will directly modify the rx_buf of the SpidevTransfer
     // rx_buf if present, so there is no need to do any additional work
-    try!(from_nix_result(unsafe { ioctl::spidev_transfer(fd, transfer) }));
+    from_nix_result(unsafe { ioctl::spidev_transfer(fd, transfer) })?;
     Ok(())
 }
 
 pub fn transfer_multiple(fd: RawFd, transfers: &mut [SpidevTransfer]) -> io::Result<()> {
-    try!(from_nix_result(unsafe {
+    from_nix_result(unsafe {
         ioctl::spidev_transfer_buf(fd, transfers)
-    }));
+    })?;
     Ok(())
 }

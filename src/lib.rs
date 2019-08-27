@@ -28,21 +28,21 @@
 //! use spidev::{Spidev, SpidevOptions, SpidevTransfer, SpiModeFlags};
 //!
 //! fn create_spi() -> io::Result<Spidev> {
-//!     let mut spi = try!(Spidev::open("/dev/spidev0.0"));
+//!     let mut spi = Spidev::open("/dev/spidev0.0")?;
 //!     let options = SpidevOptions::new()
 //!          .bits_per_word(8)
 //!          .max_speed_hz(20_000)
 //!          .mode(SpiModeFlags::SPI_MODE_0)
 //!          .build();
-//!     try!(spi.configure(&options));
+//!     spi.configure(&options)?;
 //!     Ok(spi)
 //! }
 //!
 //! /// perform half duplex operations using Read and Write traits
 //! fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
 //!     let mut rx_buf = [0_u8; 10];
-//!     try!(spi.write(&[0x01, 0x02, 0x03]));
-//!     try!(spi.read(&mut rx_buf));
+//!     spi.write(&[0x01, 0x02, 0x03])?;
+//!     spi.read(&mut rx_buf)?;
 //!     println!("{:?}", rx_buf);
 //!     Ok(())
 //! }
@@ -55,7 +55,7 @@
 //!     let mut rx_buf = [0; 3];
 //!     {
 //!         let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
-//!         try!(spi.transfer(&mut transfer));
+//!         spi.transfer(&mut transfer)?;
 //!     }
 //!     println!("{:?}", rx_buf);
 //!     Ok(())
@@ -75,7 +75,7 @@ extern crate nix;
 extern crate bitflags;
 
 pub mod spidevioctl;
-pub use spidevioctl::SpidevTransfer;
+pub use crate::spidevioctl::SpidevTransfer;
 
 use std::io;
 use std::io::prelude::*;
@@ -243,16 +243,16 @@ impl Spidev {
         // overhead
         let fd = self.devfile.as_raw_fd();
         if let Some(bpw) = options.bits_per_word {
-            try!(spidevioctl::set_bits_per_word(fd, bpw));
+            spidevioctl::set_bits_per_word(fd, bpw)?;
         }
         if let Some(speed) = options.max_speed_hz {
-            try!(spidevioctl::set_max_speed_hz(fd, speed));
+            spidevioctl::set_max_speed_hz(fd, speed)?;
         }
         if let Some(lsb_first) = options.lsb_first {
-            try!(spidevioctl::set_lsb_first(fd, lsb_first));
+            spidevioctl::set_lsb_first(fd, lsb_first)?;
         }
         if let Some(spi_mode_flags) = options.spi_mode {
-            try!(spidevioctl::set_mode(fd, spi_mode_flags));
+            spidevioctl::set_mode(fd, spi_mode_flags)?;
         }
         Ok(())
     }
