@@ -7,7 +7,7 @@ edition = "2018"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/rust-embedded/rust-spidev"
 homepage = "https://github.com/rust-embedded/rust-spidev"
-documentation = "http://posborne.github.io/rust-spidev"
+documentation = "https://docs.rs/spidev"
 description = """
 Provides access to the Linux spidev interface.  This
 interface allows for configuration of the spidev device,
