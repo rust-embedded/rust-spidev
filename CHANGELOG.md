@@ -1,5 +1,12 @@
 # Spidev Crate Changelog
 
+## 0.4.1 / 2021-02-21
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.4.0...0.4.1)
+
+- Support Rust 2018 edition
+- Minimum supported rust version is now 1.31.0
+
 ## 0.4.0 / 2019-05-29
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.3.0...0.4.0)
