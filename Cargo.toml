@@ -5,6 +5,7 @@ version = "0.4.0"
 authors = ["Paul Osborne <osbpau@gmail.com>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
+readme = "README.md"
 repository = "https://github.com/rust-embedded/rust-spidev"
 homepage = "https://github.com/rust-embedded/rust-spidev"
 documentation = "https://docs.rs/spidev"
