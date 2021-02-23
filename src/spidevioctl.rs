@@ -6,9 +6,8 @@
 // option.  This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(dead_code)]
-
-use nix;
+// macros import
+use nix::{ioctl_read, ioctl_write_ptr, ioctl_write_buf};
 use std::io;
 use std::marker::PhantomData;
 use std::os::unix::prelude::*;
@@ -113,7 +112,7 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
 }
 
 mod ioctl {
-    use super::spi_ioc_transfer;
+    use super::*;
 
     const SPI_IOC_MAGIC: u8 = 'k' as u8;
     const SPI_IOC_NR_TRANSFER: u8 = 0;
