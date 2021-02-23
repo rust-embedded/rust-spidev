@@ -69,11 +69,11 @@ pub mod spidevioctl;
 pub use crate::spidevioctl::SpidevTransfer;
 
 use bitflags::bitflags;
+use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
-use std::fs::{File, OpenOptions};
-use std::path::Path;
 use std::os::unix::prelude::*;
+use std::path::Path;
 
 // Constants extracted from linux/spi/spidev.h
 bitflags! {
@@ -203,7 +203,6 @@ impl Spidev {
         Self { devfile }
     }
 
-
     /// Open the spidev device with the provided path
     ///
     /// Typically, the path will be something like `"/dev/spidev0.0"`
@@ -211,10 +210,10 @@ impl Spidev {
     /// is the chip select on that bus for the device being targeted.
     pub fn open<P: AsRef<Path>>(path: P) -> io::Result<Spidev> {
         let devfile = OpenOptions::new()
-                          .read(true)
-                          .write(true)
-                          .create(false)
-                          .open(path)?;
+            .read(true)
+            .write(true)
+            .create(false)
+            .open(path)?;
         Ok(Self::new(devfile))
     }
 
@@ -282,16 +281,16 @@ impl Write for Spidev {
 
 #[cfg(test)]
 mod test {
-    use super::{SpidevOptions, SpiModeFlags};
+    use super::{SpiModeFlags, SpidevOptions};
 
     #[test]
     fn test_spidev_options_all() {
         let options = SpidevOptions::new()
-                          .bits_per_word(8)
-                          .max_speed_hz(20_000)
-                          .lsb_first(false)
-                          .mode(SpiModeFlags::SPI_MODE_0)
-                          .build();
+            .bits_per_word(8)
+            .max_speed_hz(20_000)
+            .lsb_first(false)
+            .mode(SpiModeFlags::SPI_MODE_0)
+            .build();
         assert_eq!(options.bits_per_word, Some(8));
         assert_eq!(options.max_speed_hz, Some(20_000));
         assert_eq!(options.lsb_first, Some(false));
