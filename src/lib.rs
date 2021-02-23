@@ -6,9 +6,6 @@
 // option.  This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![crate_type = "lib"]
-#![crate_name = "spidev"]
-
 //! # Spidev
 //!
 //! The `spidev` crate provides access to Linux spidev devices
@@ -68,15 +65,10 @@
 //! }
 //! ```
 
-extern crate libc;
-#[macro_use]
-extern crate nix;
-#[macro_use]
-extern crate bitflags;
-
 pub mod spidevioctl;
 pub use crate::spidevioctl::SpidevTransfer;
 
+use bitflags::bitflags;
 use std::io;
 use std::io::prelude::*;
 use std::fs::{File, OpenOptions};
