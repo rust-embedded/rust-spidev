@@ -1,15 +1,15 @@
 extern crate spidev;
-use spidev::{Spidev, SpidevOptions, SpiModeFlags};
 use spidev::spidevioctl::SpidevTransfer;
+use spidev::{SpiModeFlags, Spidev, SpidevOptions};
 
 fn main() {
     let mut spidev = Spidev::open("/dev/spidev0.0").unwrap();
     let options = SpidevOptions::new()
-                      .bits_per_word(8)
-                      .max_speed_hz(5000)
-                      .lsb_first(false)
-                      .mode(SpiModeFlags::SPI_MODE_0)
-                      .build();
+        .bits_per_word(8)
+        .max_speed_hz(5000)
+        .lsb_first(false)
+        .mode(SpiModeFlags::SPI_MODE_0)
+        .build();
     spidev.configure(&options).unwrap();
 
     println!("===== Single transfer =========");
@@ -24,9 +24,11 @@ fn main() {
     let tx_buf3 = [0xff, 0xfe, 0xfd];
     let mut rx_buf3 = [0; 3];
     let result = {
-        let mut transfers = vec![SpidevTransfer::read(&mut rx_buf1),
-                             SpidevTransfer::write(&tx_buf2),
-                             SpidevTransfer::read_write(&tx_buf3, &mut rx_buf3)];
+        let mut transfers = vec![
+            SpidevTransfer::read(&mut rx_buf1),
+            SpidevTransfer::write(&tx_buf2),
+            SpidevTransfer::read_write(&tx_buf3, &mut rx_buf3),
+        ];
         spidev.transfer_multiple(&mut transfers)
     };
     match result {

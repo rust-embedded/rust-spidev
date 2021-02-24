@@ -1,6 +1,6 @@
 extern crate spidev;
-use std::io::prelude::*;
 use spidev::Spidev;
+use std::io::prelude::*;
 
 fn main() {
     let mut spidev = Spidev::open("/dev/spidev0.0").unwrap();
