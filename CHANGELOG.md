@@ -1,5 +1,10 @@
 # Spidev Crate Changelog
 
+## Not yet released
+
+- Nix bumped to 0.20
+- Minimum supported rust version is now 1.40.0
+
 ## 0.4.1 / 2021-02-21
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.4.0...0.4.1)
