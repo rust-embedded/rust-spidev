@@ -6,6 +6,6 @@ status = [
   "ci-linux (stable, x86_64-unknown-linux-musl)",
   "ci-linux (beta, x86_64-unknown-linux-gnu)",
   "ci-linux (beta, x86_64-unknown-linux-musl)",
-  "ci-linux (1.31.0, x86_64-unknown-linux-gnu)",
-  "ci-linux (1.31.0, x86_64-unknown-linux-musl)",
+  "ci-linux (1.40.0, x86_64-unknown-linux-gnu)",
+  "ci-linux (1.40.0, x86_64-unknown-linux-musl)",
 ]
