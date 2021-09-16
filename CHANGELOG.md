@@ -5,7 +5,7 @@
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.4.1...HEAD)
 
 - Added `Debug` implementation for `Spidev`
-- Added `Default` implementation for `SpidevOptions`
+- Added `Debug`, `Default`, `Copy` and `PartialEq` implementations for `SpidevOptions`
 - Nix bumped to 0.22
 - bitflags updated to 1.3
 - Minimum supported rust version is now 1.46.0

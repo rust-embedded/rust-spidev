@@ -129,7 +129,7 @@ pub struct Spidev {
 /// Options that are not configured with one of the builder
 /// functions will not be modified in the kernel when
 /// `configure` is called.
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SpidevOptions {
     pub bits_per_word: Option<u8>,
     pub max_speed_hz: Option<u32>,
