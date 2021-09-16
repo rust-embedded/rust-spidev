@@ -7,6 +7,7 @@ name: Continuous integration
 
 jobs:
   ci-linux:
+    name: CI
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     strategy:

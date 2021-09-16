@@ -1,6 +1,6 @@
 # Rust Spidev
 
-[![Build Status](https://travis-ci.org/rust-embedded/rust-spidev.svg?branch=master)](https://travis-ci.org/rust-embedded/rust-spidev)
+[![Build Status](https://github.com/rust-embedded/rust-spidev/workflows/CI/badge.svg)](https://github.com/rust-embedded/rust-spidev/actions)
 [![Version](https://img.shields.io/crates/v/spidev.svg)](https://crates.io/crates/spidev)
 [![License](https://img.shields.io/crates/l/spidev.svg)](https://github.com/rust-embedded/rust-spidev/blob/master/README.md#license)
 
