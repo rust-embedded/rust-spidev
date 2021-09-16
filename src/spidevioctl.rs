@@ -109,7 +109,7 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
 mod ioctl {
     use super::*;
 
-    const SPI_IOC_MAGIC: u8 = 'k' as u8;
+    const SPI_IOC_MAGIC: u8 = b'k';
     const SPI_IOC_NR_TRANSFER: u8 = 0;
     const SPI_IOC_NR_MODE: u8 = 1;
     const SPI_IOC_NR_LSB_FIRST: u8 = 2;
