@@ -115,6 +115,7 @@ bitflags! {
 }
 
 /// Provide high-level access to Linux Spidev Driver
+#[derive(Debug)]
 pub struct Spidev {
     devfile: File,
 }
