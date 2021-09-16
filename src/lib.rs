@@ -140,12 +140,7 @@ pub struct SpidevOptions {
 impl SpidevOptions {
     /// Create a new, empty set of options
     pub fn new() -> SpidevOptions {
-        SpidevOptions {
-            bits_per_word: None,
-            max_speed_hz: None,
-            lsb_first: None,
-            spi_mode: None,
-        }
+        SpidevOptions::default()
     }
 
     /// The number of bits in each SPI transfer word
@@ -194,7 +189,7 @@ impl SpidevOptions {
 
     /// Finalize and build the SpidevOptions
     pub fn build(&self) -> Self {
-        self.clone()
+        *self
     }
 }
 
