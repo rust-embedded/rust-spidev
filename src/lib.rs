@@ -115,6 +115,7 @@ bitflags! {
 }
 
 /// Provide high-level access to Linux Spidev Driver
+#[derive(Debug)]
 pub struct Spidev {
     devfile: File,
 }
@@ -128,7 +129,7 @@ pub struct Spidev {
 /// Options that are not configured with one of the builder
 /// functions will not be modified in the kernel when
 /// `configure` is called.
-#[derive(Clone)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SpidevOptions {
     pub bits_per_word: Option<u8>,
     pub max_speed_hz: Option<u32>,
@@ -139,12 +140,7 @@ pub struct SpidevOptions {
 impl SpidevOptions {
     /// Create a new, empty set of options
     pub fn new() -> SpidevOptions {
-        SpidevOptions {
-            bits_per_word: None,
-            max_speed_hz: None,
-            lsb_first: None,
-            spi_mode: None,
-        }
+        SpidevOptions::default()
     }
 
     /// The number of bits in each SPI transfer word
@@ -193,7 +189,7 @@ impl SpidevOptions {
 
     /// Finalize and build the SpidevOptions
     pub fn build(&self) -> Self {
-        self.clone()
+        *self
     }
 }
 

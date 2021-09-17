@@ -13,17 +13,10 @@ use std::io;
 use std::marker::PhantomData;
 use std::os::unix::prelude::*;
 
-fn from_nix_error(err: ::nix::Error) -> io::Error {
-    io::Error::from_raw_os_error(
-        err.as_errno()
-            .unwrap_or_else(|| nix::errno::Errno::UnknownErrno) as i32,
-    )
-}
-
 fn from_nix_result<T>(res: ::nix::Result<T>) -> io::Result<T> {
     match res {
         Ok(r) => Ok(r),
-        Err(err) => Err(from_nix_error(err)),
+        Err(err) => Err(err.into()),
     }
 }
 
@@ -116,7 +109,7 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
 mod ioctl {
     use super::*;
 
-    const SPI_IOC_MAGIC: u8 = 'k' as u8;
+    const SPI_IOC_MAGIC: u8 = b'k';
     const SPI_IOC_NR_TRANSFER: u8 = 0;
     const SPI_IOC_NR_MODE: u8 = 1;
     const SPI_IOC_NR_LSB_FIRST: u8 = 2;
