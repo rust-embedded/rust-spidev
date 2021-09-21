@@ -4,7 +4,7 @@
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.0...HEAD)
 
-## 0.5.0 / 2021-09-20
+## 0.5.0 / 2021-09-21
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.4.1...0.5.0)
 
