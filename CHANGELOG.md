@@ -4,6 +4,8 @@
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.0...HEAD)
 
+- Updated nix to allow both version `0.22` or `0.23`.
+
 ## 0.5.0 / 2021-09-21
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.4.1...0.5.0)
