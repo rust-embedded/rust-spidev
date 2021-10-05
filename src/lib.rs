@@ -277,6 +277,12 @@ impl Write for Spidev {
     }
 }
 
+impl AsRawFd for Spidev {
+    fn as_raw_fd(&self) -> RawFd {
+        self.devfile.as_raw_fd()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{SpiModeFlags, SpidevOptions};
