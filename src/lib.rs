@@ -65,8 +65,6 @@
 //! }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/spidev/0.5.0")]
-
 pub mod spidevioctl;
 pub use crate::spidevioctl::SpidevTransfer;
 
