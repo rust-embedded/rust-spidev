@@ -5,7 +5,7 @@
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.0...HEAD)
 
 - Implement `AsRawFd` for `Spidev` to allow access to the underlying file descriptor.
-- Updated nix to allow both version `0.22` or `0.23`.
+- Updated nix to version `0.23`.
 
 ## 0.5.0 / 2021-09-21
 
