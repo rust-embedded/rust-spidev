@@ -77,6 +77,7 @@ use std::path::Path;
 
 // Constants extracted from linux/spi/spidev.h
 bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct SpiModeFlags: u32 {
         /// Clock Phase
         const SPI_CPHA = 0x01;
@@ -97,9 +98,9 @@ bitflags! {
 
         // Common Configurations
         const SPI_MODE_0 = 0x00;
-        const SPI_MODE_1 = Self::SPI_CPHA.bits;
-        const SPI_MODE_2 = Self::SPI_CPOL.bits;
-        const SPI_MODE_3 = (Self::SPI_CPOL.bits | Self::SPI_CPHA.bits);
+        const SPI_MODE_1 = Self::SPI_CPHA.bits();
+        const SPI_MODE_2 = Self::SPI_CPOL.bits();
+        const SPI_MODE_3 = (Self::SPI_CPOL.bits() | Self::SPI_CPHA.bits());
 
         // == Only Supported with 32-bits ==
 
