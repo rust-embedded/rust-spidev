@@ -9,7 +9,7 @@
 The Rust `spidev` seeks to provide full access to the Linux spidev
 device in Rust without the need to wrap any C code or directly make
 low-level system calls.  The documentation for the spidev interace can
-be found at https://www.kernel.org/doc/Documentation/spi/spidev.
+be found at <https://www.kernel.org/doc/Documentation/spi/spidev>.
 
 ## Example/API
 
@@ -91,7 +91,7 @@ raspberry pi or beaglebone black:
    can be done by doing `sudo apt-get install g++-arm-linux-gnueabihf`.
 3. Build or install rust for your target.  This is necessary in order
    to have libstd available for your target.  For arm-linux-gnueabihf,
-   you can find binaries at https://github.com/japaric/ruststrap.
+   you can find binaries at <https://github.com/japaric/ruststrap>.
    With this approach or building it yourself, you will need to copy
    the ${rust}/lib/rustlib/arm-unknown-linux-gnueabihf to your system
    rust library folder (it is namespaced by triple, so it shouldn't
@@ -112,8 +112,8 @@ linker = "arm-linux-gnueabihf-gcc"
 Licensed under either of
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+  <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
