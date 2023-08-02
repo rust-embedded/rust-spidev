@@ -4,6 +4,8 @@
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.1...HEAD)
 
+- Added support for delay transactions.
+
 ## 0.5.1 / 2021-11-22
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.0...0.5.1)

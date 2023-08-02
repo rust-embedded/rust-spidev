@@ -21,12 +21,14 @@ fn main() {
     println!("===== Multi Transfer =========");
     let mut rx_buf1 = [0; 10];
     let tx_buf2 = [0x00, 0x01, 0x02, 0x03];
+    let delay_usecs = 10;
     let tx_buf3 = [0xff, 0xfe, 0xfd];
     let mut rx_buf3 = [0; 3];
     let result = {
         let mut transfers = vec![
             SpidevTransfer::read(&mut rx_buf1),
             SpidevTransfer::write(&tx_buf2),
+            SpidevTransfer::delay(delay_usecs),
             SpidevTransfer::read_write(&tx_buf3, &mut rx_buf3),
         ];
         spidev.transfer_multiple(&mut transfers)
@@ -35,6 +37,7 @@ fn main() {
         Ok(_) => {
             println!("Read {:?}", rx_buf1);
             println!("Wrote {:?}", tx_buf2);
+            println!("Delayed by {} microseconds", delay_usecs);
             println!("Wrote {:?} and read {:?}", tx_buf3, rx_buf3);
         }
         Err(err) => println!("{:?}", err),

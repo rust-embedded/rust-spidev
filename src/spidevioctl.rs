@@ -78,6 +78,7 @@ pub struct spi_ioc_transfer<'a, 'b> {
 }
 
 impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
+    /// Create a read transfer
     pub fn read(buff: &'b mut [u8]) -> Self {
         spi_ioc_transfer {
             rx_buf: buff.as_ptr() as *const () as usize as u64,
@@ -86,6 +87,7 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
         }
     }
 
+    /// Create a write transfer
     pub fn write(buff: &'a [u8]) -> Self {
         spi_ioc_transfer {
             tx_buf: buff.as_ptr() as *const () as usize as u64,
@@ -94,13 +96,23 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
         }
     }
 
-    /// The `tx_buf` and `rx_buf` must be the same length.
+    /// Create a read/write transfer.
+    /// Note that the `tx_buf` and `rx_buf` must be the same length.
     pub fn read_write(tx_buf: &'a [u8], rx_buf: &'b mut [u8]) -> Self {
         assert_eq!(tx_buf.len(), rx_buf.len());
         spi_ioc_transfer {
             rx_buf: rx_buf.as_ptr() as *const () as usize as u64,
             tx_buf: tx_buf.as_ptr() as *const () as usize as u64,
             len: tx_buf.len() as u32,
+            ..Default::default()
+        }
+    }
+
+    /// Create a delay transfer of a number of microseconds
+    pub fn delay(microseconds: u16) -> Self {
+        spi_ioc_transfer {
+            delay_usecs: microseconds,
+            len: 0,
             ..Default::default()
         }
     }
