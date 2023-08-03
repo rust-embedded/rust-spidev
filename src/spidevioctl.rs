@@ -196,10 +196,10 @@ pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // the 8-bit mask are used.  This is because WR_MODE32 was not
     // added until later kernels.  This provides a reasonable story
     // for forwards and backwards compatibility
-    if (mode.bits & 0xFFFFFF00) != 0 {
-        from_nix_result(unsafe { ioctl::set_mode32(fd, &mode.bits) })?;
+    if (mode.bits() & 0xFFFFFF00) != 0 {
+        from_nix_result(unsafe { ioctl::set_mode32(fd, &mode.bits()) })?;
     } else {
-        let bits: u8 = mode.bits as u8;
+        let bits: u8 = mode.bits() as u8;
         from_nix_result(unsafe { ioctl::set_mode(fd, &bits) })?;
     }
     Ok(())
