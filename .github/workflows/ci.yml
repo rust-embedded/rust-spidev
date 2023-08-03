@@ -7,6 +7,9 @@ on:
 
 name: CI
 
+env:
+  RUSTFLAGS: '--deny warnings'
+
 jobs:
   ci-linux:
     name: CI
@@ -15,7 +18,7 @@ jobs:
     strategy:
       matrix:
         # All published crates must build on stable.
-        rust: [stable, beta, 1.46.0]
+        rust: [stable, beta, 1.56.1]
 
         # The default target we're compiling on and for.
         TARGET: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
@@ -27,26 +30,13 @@ jobs:
             TARGET: x86_64-unknown-linux-gnu
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.TARGET }}
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --target=${{ matrix.TARGET }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --target=${{ matrix.TARGET }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --target=${{ matrix.TARGET }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --target=${{ matrix.TARGET }} --examples
+          target: ${{ matrix.target }}
+
+      - run: cargo check --target=${{ matrix.TARGET }}
+      - run: cargo build --target=${{ matrix.TARGET }}
+      - run: cargo test --target=${{ matrix.TARGET }}
+      - run: cargo build --target=${{ matrix.TARGET }} --examples
