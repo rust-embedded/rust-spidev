@@ -21,4 +21,4 @@ half-duplex SPI access, and full-duplex SPI access.
 [dependencies]
 libc = "0.2"
 bitflags = "2.3"
-nix = "0.26"
+nix = "0.26.2"
