@@ -2,8 +2,15 @@
 
 ## Not yet released
 
-[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.2...HEAD)
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...HEAD)
 
+## 0.6.0 / 2023-08-03
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.2...0.6.0)
+
+- Nix updated to 0.26
+- bitflags updated to 2.3
+- Minimum Supported Rust Version is now 1.56.1
 
 ## 0.5.2 / 2023-08-02
 
