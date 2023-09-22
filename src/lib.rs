@@ -245,6 +245,36 @@ impl Spidev {
         Ok(())
     }
 
+    /// Read the current configuration from this device
+    pub fn query_configuration(&self) -> io::Result<SpidevOptions> {
+        let fd = self.devfile.as_raw_fd();
+
+        let bpw = spidevioctl::get_bits_per_word(fd)?;
+        let speed = spidevioctl::get_max_speed_hz(fd)?;
+        let lsb_first = (spidevioctl::get_lsb_first(fd)?) != 0;
+
+        // Try to get the mode as 32-bit (RD_MODE32). Older kernels may return ENOTTY
+        // indicating 32-bit is not supported. In that case we retry in 8-bit mode.
+        let mode_bits = spidevioctl::get_mode_u32(fd).or_else(|err| {
+            if err.raw_os_error() == Some(libc::ENOTTY) {
+                spidevioctl::get_mode(fd).map(|value| value as u32)
+            } else {
+                Err(err)
+            }
+        })?;
+
+        let mode = SpiModeFlags::from_bits_retain(mode_bits);
+
+        let options = SpidevOptions::new()
+            .bits_per_word(bpw)
+            .max_speed_hz(speed)
+            .lsb_first(lsb_first)
+            .mode(mode)
+            .build();
+
+        Ok(options)
+    }
+
     /// Perform a single transfer
     pub fn transfer(&self, transfer: &mut SpidevTransfer) -> io::Result<()> {
         spidevioctl::transfer(self.devfile.as_raw_fd(), transfer)

@@ -191,6 +191,12 @@ pub fn get_mode(fd: RawFd) -> io::Result<u8> {
     Ok(mode)
 }
 
+pub fn get_mode_u32(fd: RawFd) -> io::Result<u32> {
+    let mut mode: u32 = 0;
+    from_nix_result(unsafe { ioctl::get_mode_u32(fd, &mut mode) })?;
+    Ok(mode)
+}
+
 pub fn set_mode(fd: RawFd, mode: SpiModeFlags) -> io::Result<()> {
     // we will always use the 8-bit mode write unless bits not in
     // the 8-bit mask are used.  This is because WR_MODE32 was not
