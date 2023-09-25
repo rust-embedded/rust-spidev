@@ -253,8 +253,9 @@ impl Spidev {
         let speed = spidevioctl::get_max_speed_hz(fd)?;
         let lsb_first = (spidevioctl::get_lsb_first(fd)?) != 0;
 
-        // Try to get the mode as 32-bit (RD_MODE32). Older kernels may return ENOTTY
-        // indicating 32-bit is not supported. In that case we retry in 8-bit mode.
+        // Try to get the mode as 32-bit (`RD_MODE32`). Older kernels may return
+        // `ENOTTY` indicating 32-bit is not supported. In that case we retry in
+        // 8-bit mode.
         let mode_bits = spidevioctl::get_mode_u32(fd).or_else(|err| {
             if err.raw_os_error() == Some(libc::ENOTTY) {
                 spidevioctl::get_mode(fd).map(|value| value as u32)
