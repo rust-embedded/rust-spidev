@@ -4,6 +4,8 @@
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...HEAD)
 
+- Added support for querying the configuration of a SPI device.
+
 ## 0.6.0 / 2023-08-03
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.2...0.6.0)
