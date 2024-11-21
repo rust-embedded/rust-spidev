@@ -22,4 +22,4 @@ rust-version = "1.63"
 [dependencies]
 libc = "0.2"
 bitflags = "2.3"
-nix = "0.26.2"
+nix = "0.26.4"
