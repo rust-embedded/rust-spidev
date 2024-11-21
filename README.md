@@ -73,7 +73,7 @@ The following features are implemented and planned for the library:
 - [x] Implement the Write trait
 - [x] Support for full-duplex transfers
 - [x] Support for configuring spidev device
-- [ ] Support for querying spidev configuration state
+- [x] Support for querying spidev configuration state
 
 ## Minimum Supported Rust Version (MSRV)
 
