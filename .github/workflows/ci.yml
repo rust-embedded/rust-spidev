@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         # All published crates must build on stable.
-        rust: [stable, beta, 1.56.1]
+        rust: [stable, beta, 1.63.0]
 
         # The default target we're compiling on and for.
         TARGET: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
