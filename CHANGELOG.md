@@ -9,7 +9,9 @@
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...0.6.1)
 
 - Added support for querying the configuration of a SPI device.
-- Minimum Supported Rust Version is now 1.63.0
+- `nix` updated to 0.29
+- `bitflags` updated to 2.9
+- Minimum Supported Rust Version is now 1.69.0
 
 ## 0.6.0 / 2023-08-03
 

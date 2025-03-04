@@ -17,9 +17,9 @@ Provides access to the Linux spidev interface.  This
 interface allows for configuration of the spidev device,
 half-duplex SPI access, and full-duplex SPI access.
 """
-rust-version = "1.63"
+rust-version = "1.69"
 
 [dependencies]
 libc = "0.2"
-bitflags = "2.3"
-nix = "0.26.4"
+bitflags = "2.9"
+nix = { version = "0.29", features = ["ioctl"] }
