@@ -2,11 +2,11 @@
 
 ## Not yet released
 
-[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.1...HEAD)
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.7.0...HEAD)
 
-## 0.6.1 / 2025-03-04
+## 0.7.0 / 2025-03-04
 
-[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...0.6.1)
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...0.7.0)
 
 - Added support for querying the configuration of a SPI device.
 - `nix` updated to 0.29
