@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/rust-embedded/rust-spidev/workflows/CI/badge.svg)](https://github.com/rust-embedded/rust-spidev/actions)
 [![Version](https://img.shields.io/crates/v/spidev.svg)](https://crates.io/crates/spidev)
 [![License](https://img.shields.io/crates/l/spidev.svg)](https://github.com/rust-embedded/rust-spidev/blob/master/README.md#license)
-![Minimum Supported Rust Version](https://img.shields.io/badge/rustc-1.63.0+-blue.svg)
+![Minimum Supported Rust Version](https://img.shields.io/badge/rustc-1.69.0+-blue.svg)
 
 [Documentation](https://docs.rs/spidev)
 
@@ -73,11 +73,11 @@ The following features are implemented and planned for the library:
 - [x] Implement the Write trait
 - [x] Support for full-duplex transfers
 - [x] Support for configuring spidev device
-- [ ] Support for querying spidev configuration state
+- [x] Support for querying spidev configuration state
 
 ## Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.63.0 and up.  It *might*
+This crate is guaranteed to compile on stable Rust 1.69.0 and up.  It *might*
 compile with older versions but that may change in any new patch release.
 
 ## Cross Compiling
