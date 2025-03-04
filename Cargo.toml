@@ -17,6 +17,7 @@ Provides access to the Linux spidev interface.  This
 interface allows for configuration of the spidev device,
 half-duplex SPI access, and full-duplex SPI access.
 """
+rust-version = "1.63"
 
 [dependencies]
 libc = "0.2"
