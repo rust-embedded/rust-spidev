@@ -112,7 +112,7 @@ impl<'a, 'b> spi_ioc_transfer<'a, 'b> {
     /// and writing (in-place transfer).
     pub fn read_write_in_place(buf: &'a mut [u8]) -> Self {
         // This is allowed according to a comment in the linux source tree:
-        // https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/include/linux/spi/spi.h?id=211ddde0823f1442e4ad052a2f30f050145ccada#n1073
+        // https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/spi/spidev.rst?id=211ddde0823f1442e4ad052a2f30f050145ccada#n191
         spi_ioc_transfer {
             rx_buf: buf.as_ptr() as *const () as usize as u64,
             tx_buf: buf.as_ptr() as *const () as usize as u64,
