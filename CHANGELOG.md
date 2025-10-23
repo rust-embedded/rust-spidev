@@ -15,6 +15,15 @@
 - `bitflags` updated to 2.9
 - Minimum Supported Rust Version is now 1.69.0
 
+## 0.6.1 / 2025-10-23
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.6.0...0.6.1)
+
+- Backport `read_write_in_place` from [#49](https://github.com/rust-embedded/rust-spidev/pull/49)
+  for fixing
+  [linux-embedded-hal/#120](https://github.com/rust-embedded/linux-embedded-hal/issues/120)
+  with a patch release
+
 ## 0.6.0 / 2023-08-03
 
 [Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.5.2...0.6.0)
