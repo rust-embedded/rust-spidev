@@ -2,7 +2,11 @@
 
 ## Not yet released
 
-[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.7.0...HEAD)
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.7.1...HEAD)
+
+## 0.7.1 / 2025-10-27
+
+[Full Changelog](https://github.com/rust-embedded/rust-spidev/compare/0.7.0...0.7.1)
 
 - Implement a `read_write_in_place` method for in-place transfers.
 
